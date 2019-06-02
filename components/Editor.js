@@ -1,5 +1,4 @@
 // Theirs
-import url from 'url'
 import React from 'react'
 import domtoimage from 'dom-to-image'
 import dynamic from 'next/dynamic'
@@ -15,7 +14,6 @@ import Carbon from './Carbon'
 import ExportMenu from './ExportMenu'
 import Themes from './Themes'
 import TweetButton from './TweetButton'
-import GistContainer from './GistContainer'
 import {
   LANGUAGES,
   LANGUAGE_MIME_HASH,
@@ -27,9 +25,11 @@ import {
   DEFAULT_CODE,
   DEFAULT_SETTINGS,
   DEFAULT_LANGUAGE,
-  DEFAULT_PRESET_ID
+  DEFAULT_PRESET_ID,
+  DEFAULT_THEME,
+  FONTS
 } from '../lib/constants'
-import { serializeState, getQueryStringState } from '../lib/routing'
+import { serializeState, getRouteState } from '../lib/routing'
 import { getSettings, unescapeHtml, formatCode, omit } from '../lib/util'
 import LanguageIcon from './svg/Language'
 
@@ -41,6 +41,7 @@ const BackgroundSelect = dynamic(() => import('./BackgroundSelect'), {
 
 class Editor extends React.Component {
   static contextType = ApiContext
+
   constructor(props) {
     super(props)
     this.state = {
@@ -52,7 +53,6 @@ class Editor extends React.Component {
     this.export = this.export.bind(this)
     this.upload = this.upload.bind(this)
     this.updateSetting = this.updateSetting.bind(this)
-    this.updateTheme = this.updateTheme.bind(this)
     this.updateLanguage = this.updateLanguage.bind(this)
     this.updateBackground = this.updateBackground.bind(this)
     this.resetDefaultSettings = this.resetDefaultSettings.bind(this)
@@ -61,22 +61,34 @@ class Editor extends React.Component {
   }
 
   async componentDidMount() {
-    const { asPath = '' } = this.props.router
-    const { query } = url.parse(asPath, true)
-    const queryParams = getQueryStringState(query)
-    const initialState = Object.keys(queryParams).length ? queryParams : {}
+    const { queryState, parameter } = getRouteState(this.props.router)
+
+    // TODO we could create an interface for loading this config, so that it looks identical
+    // whether config is loaded from localStorage, gist, or even something like IndexDB
+    let gistState
+    if (this.context.gist && parameter) {
+      const { config, ...gist } = (await this.context.gist.get(parameter)) || {}
+      if (typeof config === 'object') {
+        this.gist = gist
+        gistState = config
+      }
+    }
 
     const newState = {
-      // Load from localStorage
-      ...getSettings(localStorage),
+      // Load options from gist or localStorage
+      ...(gistState ? gistState : getSettings(localStorage)),
       // and then URL params
-      ...initialState,
+      ...queryState,
       loading: false
     }
 
     // Makes sure the slash in 'application/X' is decoded
     if (newState.language) {
       newState.language = unescapeHtml(newState.language)
+    }
+
+    if (newState.fontFamily && !FONTS.find(({ id }) => id === newState.fontFamily)) {
+      newState.fontFamily = DEFAULT_SETTINGS.fontFamily
     }
 
     this.updateState(newState)
@@ -89,10 +101,17 @@ class Editor extends React.Component {
 
   carbonNode = React.createRef()
 
-  updateState = updates => this.setState(updates, () => this.props.onUpdate(this.state))
+  getTheme = () => this.props.themes.find(t => t.id === this.state.theme) || DEFAULT_THEME
+
+  updateState = updates => {
+    this.setState(updates, () => {
+      if (!this.gist) {
+        this.props.onUpdate(this.state)
+      }
+    })
+  }
 
   updateCode = code => this.updateState({ code })
-  updateAspectRatio = aspectRatio => this.updateState({ aspectRatio })
 
   async getCarbonImage(
     {
@@ -105,7 +124,12 @@ class Editor extends React.Component {
     // if safari, get image from api
     const isPNG = format !== 'svg'
     if (this.context.image && this.isSafari && isPNG) {
-      const encodedState = serializeState(this.state)
+      const themeConfig = this.getTheme()
+      // pull from custom theme highlights, or state highlights
+      const encodedState = serializeState({
+        ...this.state,
+        highlights: { ...themeConfig.highlights, ...this.state.highlights }
+      })
       return this.context.image(encodedState)
     }
 
@@ -113,14 +137,14 @@ class Editor extends React.Component {
 
     const map = new Map()
     const undoMap = value => {
-      map.forEach((value, node) => (node.innerText = value))
+      map.forEach((value, node) => (node.innerHTML = value))
       return value
     }
 
     if (isPNG) {
       node.querySelectorAll('span[role="presentation"]').forEach(node => {
         if (node.innerText && node.innerText.match(/%[A-Za-z0-9]{2}/)) {
-          map.set(node, node.innerText)
+          map.set(node, node.innerHTML)
           node.innerText.match(/%[A-Za-z0-9]{2}/g).forEach(t => {
             node.innerText = node.innerText.replace(t, encodeURIComponent(t))
           })
@@ -192,10 +216,10 @@ class Editor extends React.Component {
     }
   }
 
-  export(format = 'png') {
+  export(format = 'png', options = {}) {
     const link = document.createElement('a')
 
-    const prefix = this.state.filename || 'carbon'
+    const prefix = options.filename || 'carbon'
 
     return this.getCarbonImage({ format, type: 'blob' }).then(url => {
       if (format !== 'open') {
@@ -232,12 +256,10 @@ class Editor extends React.Component {
     }
   }
 
-  updateTheme(theme) {
-    this.updateSetting('theme', theme)
-  }
-
   updateLanguage(language) {
-    this.updateSetting('language', language.mime || language.mode)
+    if (language) {
+      this.updateSetting('language', language.mime || language.mode)
+    }
   }
 
   updateBackground({ photographer, ...changes } = {}) {
@@ -252,6 +274,29 @@ class Editor extends React.Component {
     }
   }
 
+  updateTheme = theme => this.updateState({ theme })
+  updateHighlights = updates =>
+    this.setState(({ highlights = {} }) => ({
+      highlights: {
+        ...highlights,
+        ...updates
+      }
+    }))
+
+  createTheme = theme => {
+    this.props.updateThemes(themes => [theme, ...themes])
+    this.updateTheme(theme.id)
+  }
+
+  removeTheme = id => {
+    this.props.updateThemes(themes => themes.filter(t => t.id !== id))
+    if (this.state.theme.id === id) {
+      this.updateTheme(DEFAULT_THEME.id)
+    }
+  }
+
+  applyPreset = ({ id: preset, ...settings }) => this.updateState({ preset, ...settings })
+
   format = () =>
     formatCode(this.state.code)
       .then(this.updateCode)
@@ -259,27 +304,35 @@ class Editor extends React.Component {
         // create toast here in the future
       })
 
-  applyPreset = ({ id: preset, ...settings }) => this.updateState({ preset, ...settings })
-
   render() {
     const {
-      theme,
+      highlights,
       language,
       backgroundColor,
       backgroundImage,
       backgroundMode,
-      aspectRatio,
       code,
       exportSize
     } = this.state
 
-    const config = omit(this.state, ['code', 'aspectRatio'])
+    const config = omit(this.state, ['code'])
+
+    const theme = this.getTheme()
 
     return (
       <div className="editor">
         <Toolbar>
-          <Themes key={theme} updateTheme={this.updateTheme} theme={theme} />
+          <Themes
+            theme={theme}
+            highlights={highlights}
+            update={this.updateTheme}
+            updateHighlights={this.updateHighlights}
+            remove={this.removeTheme}
+            create={this.createTheme}
+            themes={this.props.themes}
+          />
           <Dropdown
+            title="Language"
             icon={languageIcon}
             selected={
               LANGUAGE_NAME_HASH[language] ||
@@ -295,7 +348,7 @@ class Editor extends React.Component {
             mode={backgroundMode}
             color={backgroundColor}
             image={backgroundImage}
-            aspectRatio={aspectRatio}
+            carbonRef={this.carbonNode.current}
           />
           <Settings
             {...config}
@@ -328,16 +381,23 @@ class Editor extends React.Component {
                 ref={this.carbonNode}
                 config={this.state}
                 onChange={this.updateCode}
-                onAspectRatioChange={this.updateAspectRatio}
                 loading={this.state.loading}
+                theme={theme}
               >
                 {code != null ? code : DEFAULT_CODE}
               </Carbon>
             </Overlay>
           )}
         </Dropzone>
-
-        <GistContainer onChange={stateFromGist => this.setState(stateFromGist)} />
+        <style jsx global>
+          {`
+            @font-face {
+              font-family: ${config.fontUrl ? config.fontFamily : ''};
+              src: url(${config.fontUrl || ''}) format('woff');
+              font-display: swap;
+            }
+          `}
+        </style>
         <style jsx>
           {`
             .editor {

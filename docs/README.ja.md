@@ -13,17 +13,17 @@
 
 ## Introduction
 
-Vous connaissez [tous](https://twitter.com/dan_abramov/status/890191815567175680) [ces](https://twitter.com/reactjs/status/890511993261654017) [captures d'écran](https://twitter.com/notquiteleo/status/873483329345028096) [de code](https://twitter.com/zeithq/status/805779711154647040) que vous avez croisé sur Twitter ? Bien que le code seul soit généralement impressionnant, nous avons estimé qu'il était possible d'améliorer la partie esthétique. Carbon facilite la création et le partage de votre code source au travers de superbes images. Alors qu'est-ce que vous attendez ? Impressionnez tous vos abonnés avec vos nouvelles prouesses en matière de conception graphique.
+Twitter で[いつも](https://twitter.com/dan_abramov/status/890191815567175680)[見るような](https://twitter.com/reactjs/status/890511993261654017)[こうしたコード](https://twitter.com/notquiteleo/status/873483329345028096)の[スクリーンショット](https://twitter.com/zeithq/status/805779711154647040)をご存知ですか？こうしたコードはたいていは印象的ですが、美しさの点では改善の余地があります。Carbon を使えば、ソースコードの美しいスクリーンショットを簡単に作成し、共有することができます。今すぐ、この新しいデザインの力を使ってフォロワーを感動させましょう。
 
-Rendez-vous sur le site [carbon.now.sh](https://carbon.now.sh) ou allez lire [notre article](https://dawnlabs.io/case-studies/carbon/) pour en apprendre plus à propos du projet.
+プロジェクトの詳細は[carbon.now.sh](https://carbon.now.sh)や[投稿](https://dawnlabs.io/case-studies/carbon/)にあります。
 
-## Fonctionnalités
+## Features
 
-- **Import depuis GitHub gist**. Ajoutez simplement un ID de gist GitHub à l'URL
-- **Personnalisation**. Personnalisez des éléments tels que le thème de la syntaxe de votre image, le style de la fenêtre, etc.
-- **Partage rapide**. Enregistrez votre image ou tweetez un lien en un clic
+- **GitHub gist からのインポート**. URL に GitHub gist id を付け加える
+- **カスタマイズ**. シンタックステーマやウィンドウスタイルなどをカスタマイズ
+- **すばやくシェア**. ワンクリックで画像を保存したり、リンクをツイート
 
-## Exemple
+## Example
 
 <p align="center"><img width=100% src="https://user-images.githubusercontent.com/10369094/30791512-cb001438-a167-11e7-952b-f0f0e5c4499e.png"></p>
 
@@ -31,69 +31,71 @@ Rendez-vous sur le site [carbon.now.sh](https://carbon.now.sh) ou allez lire [no
 
 #### Import
 
-Il existe différentes manières d'importer du code dans Carbon :
+Carbon にインポートするには何通りかの方法があります:
 
-- Déposer un fichier dans l'éditeur
-- Ajouter un identifiant de GitHub gist à l'URL (ex. `carbon.now.sh/ICI_LE_GIST_ID`)
-- Collez votre code directement
+- エディターにファイルをドロップする
+- URL に GitHub gist id を付け加える (e.g. `carbon.now.sh/GIST_ID_HERE`)
+- コードを直接ペーストする
 
-#### Personnalisation
+#### Customization
 
-Une fois que tout votre code est saisi dans Carbon, vous pouvez personnaliser votre image en modifiant le thème de la syntaxe, la couleur d'arrière-plan, le thème de la fenêtre ou le remplissage.
+コードを Carbon にインポートできたらシンタックステーマや背景色、ウィンドウスタイル、パディングなどで、画像をカスタマイズすることができます。
 
-#### Export / Partage
+#### Export/Sharing
 
-Une fois que vous avez personnalisé votre image, vous pouvez soit twetté let lien vers l’image, soit l'enregistrer directement.
+画像のカスタマイズが終わったら、画像リンクをツイートしたり直接ダウンロードできます。
 
-Si vous utilisez le bouton &apos;Tweet&apos;, Carbon rendra automatiquement votre image accessible aux utilisateurs malvoyants. Toutefois, si vous souhaitez tweeter manuellement votre image carbone, veuillez vérifier [comment rendre les images accessibles aux utilisateurs malvoyants de Twitter](https://help.twitter.com/fr/using-twitter/picture-descriptions).
+&apos;Tweet&apos;ボタンを使えば、Carbon は自動的に画像を利用できるようにします。もし Carbon の画像を手動でツイートしたい場合は、[画像のアクセシビリティを向上させる方法](https://help.twitter.com/en/using-twitter/picture-descriptions)を確認してください。
 
-Si vous incluez une image Carbon dans un article, le code source sera invisible pour les technologies d'assistance, il ne sera pas possible de l'agrandir ou de le copier, etc. Veuillez penser à ajouter un autre élément avec le code source sous forme de texte, comme une [balise HTML Details](https://developer.mozilla.org/fr/docs/Web/HTML/Element/details) sous l'image.
+投稿の中で Carbon 画像を使うと、ソースコードは assistive technology からは見えなくなり、拡大やコピーなどはできなくなります。画像の下に[HTML Details Element](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/details)のように、テキストとしてソースコードを持つ別の要素を追加することを検討してください。
 
-## Communauté
+## Community
 
-Découvrez les projets créés par notre fantastique communauté :
+私たちの素晴らしいコミュニティが作成したプロジェクトをチェックしてください:
 
-##### Plugins pour les éditeurs de code
+##### Editor Plugins
 
-- [IntelliJ IDEA `carbon-now-sh`](https://plugins.jetbrains.com/plugin/10469-carbon-now-sh) - Ouvrez la sélection de votre fichier IntelliJ IDEA actuel dans Carbon via un menu contextuel
-- [Atom `carbon-now-sh`](https://atom.io/packages/carbon-now-sh) - Ouvrez votre fichier Atom actuel dans Carbon avec `shift-cmd-A`
-- [VS Code `carbon-now-sh`](https://marketplace.visualstudio.com/items?itemName=ericadamski.carbon-now-sh) - Ouvrez votre fichier VS Code actuel dans Carbon avec la commande `carbon`
-- [Sublime Text 3 `carbon-now-sh`](https://github.com/molnarmark/carbonSublime) - Ouvrez la sélection de votre fichier Sublime Text 3 actuel avec une clé liée personnalisée
-- [Vim `carbon-now-sh`](https://github.com/kristijanhusak/vim-carbon-now-sh) - Ouvrez la sélection dans votre Vim / Neovim actuelle en utilisant la fonction `CarbonNowSh()`
-- [Emacs `carbon-now-sh`](https://github.com/veelenga/carbon-now-sh.el) - Ouvrez la sélection dans votre Emacs actuel en utilisant la fonction interactive `carbon-now-sh`
+- [IntelliJ IDEA `carbon-now-sh`](https://plugins.jetbrains.com/plugin/10469-carbon-now-sh) - 現在の IntelliJ IDEA ファイルの選択したコードをコンテキストメニューから Carbon で開く
+- [Atom `carbon-now-sh`](https://atom.io/packages/carbon-now-sh) - `shift-cmd-A`コマンドを使い、現在の Atom ファイルを Carbon で開く
+- [VS Code `carbon-now-sh`](https://marketplace.visualstudio.com/items?itemName=ericadamski.carbon-now-sh) - `carbon`コマンドを使い、VS Code ファイルを Carbon で開く
+- [Sublime Text 3 `carbon-now-sh`](https://github.com/molnarmark/carbonSublime) - カスタムコマンドを使い、現在の Sublime Text 3 ファイルの選択したコードを Carbon で開く
+- [Vim `carbon-now-sh`](https://github.com/kristijanhusak/vim-carbon-now-sh) - `CarbonNowSh()`関数を使い、現在の Vim/Neovim を Carbon で開く
+- [Emacs `carbon-now-sh`](https://github.com/veelenga/carbon-now-sh.el) - `carbon-now-sh`インタラクティブ関数を使い、現在の Emacs を Carbon で開く
+- [Xcode `carbon-now-sh`](https://github.com/StevenMagdy/CarboNow4Xcode) - `carbon.now.sh`を使い、選択したコードを Carbon で開く
 
-##### Outils
+##### Tools
 
-- [CLI `carbon-now-cli`](https://github.com/mixn/carbon-now-cli) - Ouvrez un fichier dans Carbon ou téléchargez-le directement en utilisant `carbon-now`, comportant un mode interactif, une mise en évidence sélective et plus encore
-- [Carbonize](https://itunes.apple.com/us/app/carbonize/id1451177988) - Un wrapper macOS avec des fonctionnalités natives étendues
+- [CLI `carbon-now-cli`](https://github.com/mixn/carbon-now-cli) - `carbon-now`を使い、Carbon でファイルを開いたり、直接ダウンロードする。インタラクティブモードや、シンタックスハイライト機能など
+- [Carbonize](https://itunes.apple.com/us/app/carbonize/id1451177988) - 拡張ネイティブ機能を備えた macOS ラッパー
+- [CodeExpander](https://codeexpander.com) - TextExpander 機能を備えたスマートな GitHub Gist クライアント
 
-##### Bibliothèques
+##### Libraries
 
-- [R `carbonate`](https://yonicd.github.io/carbonate/) - Manipulez de manière itérative l’esthétique de l’image dans `R` et ouvrez-la dans Carbon, ou téléchargez-la directement.
+- [R `carbonate`](https://yonicd.github.io/carbonate/) - `R`でインタラクティブに画像のスタイルを操作し、コードを Carbon で開くか直接ダウンロードする
 
-##### Manuels
+##### Textbooks
 
-- ["CS 101 - Une ntroduction à la pensée informatique"](https://itunes.apple.com/us/book/id1435714196) - un manuel d'informatique de Sarbo Roy.
+- ["CS 101 - An Introduction to Computational Thinking"](https://itunes.apple.com/us/book/id1435714196) - Sarbo Roy によるコンピューターサイエンスのテキストブック
 
-## Contribuer
+## Contribute
 
-Les PRs sont les bienvenues ! Veuillez lire notre [CONTRIBUTING.md](https://github.com/dawnlabs/carbon/blob/master/.github/CONTRIBUTING.md) pour plus de détails.
+PR を歓迎しています。詳細は[CONTRIBUTING.md](https://github.com/dawnlabs/carbon/blob/master/.github/CONTRIBUTING.md)をご覧ください。
 
-## Merci à
+## Thanks To
 
-[ ▲ ZEIT ](https://zeit.co/) pour sponsoriser l'hébergement de Carbon.
+[ ▲ ZEIT ](https://zeit.co/)は Carbon のホスティングを支援してくれています。
 
-## Auteurs
+## Authors
 
-Carbon est un projet de <a href="http://dawnlabs.io/"><img width=8% src="https://cloud.githubusercontent.com/assets/10369094/25406306/dacebd4c-29cb-11e7-8e1c-468687cde495.png"></a>
+Carbon は<a href="http://dawnlabs.io/"><img width=8% src="https://cloud.githubusercontent.com/assets/10369094/25406306/dacebd4c-29cb-11e7-8e1c-468687cde495.png"></a>によるプロジェクトです
 
 - Mike Fix ([@mfix22](https://github.com/mfix22))
 - Brian Dennis ([@briandennis](https://github.com/briandennis))
 - Jake Dexheimer ([@jakedex](https://github.com/jakedex))
 
-## Contributeurs
+## Contributors
 
-Merci à toutes ces personnes merveilleuses ([emoji key](https://github.com/kentcdodds/all-contributors#emoji-key)):
+これらのすべての素晴らしい人々に感謝を ([emoji key](https://github.com/kentcdodds/all-contributors#emoji-key)):
 
 <!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
 <!-- prettier-ignore -->

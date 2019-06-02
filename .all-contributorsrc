@@ -12,7 +12,8 @@
     "docs/README.tr.md",
     "docs/README.kr.md",
     "docs/README.ta.md",
-    "docs/README.fr.md"
+    "docs/README.fr.md",
+    "docs/README.ja.md"
   ],
   "imageSize": 100,
   "commit": false,
@@ -472,7 +473,55 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "muhammadmuzzammil1998",
+      "name": "Muhammad Muzzammil",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/12321712?v=4",
+      "profile": "https://muzzammil.xyz/?ref=github",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "souppower",
+      "name": "souppower",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/19849611?v=4",
+      "profile": "https://github.com/souppower",
+      "contributions": [
+        "infra"
+      ]
+    },
+    {
+      "login": "uraway",
+      "name": "Masato Urai (@uraway_)",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/15242484?v=4",
+      "profile": "http://uraway.hatenablog.com/",
+      "contributions": [
+        "translation"
+      ]
+    },
+    {
+      "login": "techinpark",
+      "name": "Fernando",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/45546296?v=4",
+      "profile": "http://techinpark.com",
+      "contributions": [
+        "translation"
+      ]
+    },
+    {
+      "login": "megsachdev",
+      "name": "Megha Sachdev",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/22325351?v=4",
+      "profile": "https://github.com/megsachdev",
+      "contributions": [
+        "code",
+        "test"
+      ]
     }
   ],
-  "repoType": "github"
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "contributorsPerLine": 7
 }

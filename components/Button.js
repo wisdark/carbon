@@ -1,11 +1,11 @@
 import React from 'react'
+import VisuallyHidden from '@reach/visually-hidden'
 
 import { COLORS } from '../lib/constants'
 
 const Button = ({
   id,
   onClick = () => {},
-  className = '',
   background = COLORS.BLACK,
   color = COLORS.SECONDARY,
   hoverBackground = COLORS.HOVER,
@@ -16,16 +16,19 @@ const Button = ({
   border,
   center,
   large,
-  style = {},
   flex = 1,
   padding = 0,
-  margin = 0
+  margin = 0,
+  title,
+  Component = 'button',
+  ...props
 }) => (
-  <button id={id} onClick={onClick} className={className} disabled={disabled} style={style}>
+  <Component id={id} onClick={onClick} disabled={disabled} {...props}>
+    {title && <VisuallyHidden>{title}</VisuallyHidden>}
     {children}
     <style jsx>
       {`
-        button {
+        ${Component} {
           display: flex;
           flex: ${flex};
           background-color: ${background};
@@ -44,13 +47,17 @@ const Button = ({
           font-size: ${large ? '14px' : '12px'};
         }
 
-        button:hover {
+        ${Component}:hover, ${Component}:focus {
           background-color: ${hoverBackground} !important;
           color: ${hoverColor || color};
         }
+
+        ${Component}:focus {
+          box-shadow: ${border ? `inset 0px 0px 0px 2px ${color}` : 'initial'};
+        }
       `}
     </style>
-  </button>
+  </Component>
 )
 
 export default Button

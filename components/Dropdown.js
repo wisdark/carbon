@@ -1,6 +1,7 @@
 import React from 'react'
 import Downshift from 'downshift'
 import matchSorter from 'match-sorter'
+import VisuallyHidden from '@reach/visually-hidden'
 import { Down as ArrowDown } from './svg/Arrows'
 import CheckMark from './svg/Checkmark'
 import { COLORS } from '../lib/constants'
@@ -57,10 +58,21 @@ class Dropdown extends React.PureComponent {
   userInputtedValue = ''
 
   render() {
-    const { innerRef, color, selected, onChange, itemWrapper, icon, disableInput } = this.props
+    const {
+      innerRef,
+      color,
+      selected,
+      onChange,
+      itemWrapper,
+      icon,
+      disableInput,
+      title
+    } = this.props
     const { itemsToShow, inputValue } = this.state
 
     const minWidth = calcMinWidth(itemsToShow)
+
+    const labelId = title ? `${title.toLowerCase()}-dropdown` : undefined
 
     return (
       <Downshift
@@ -71,6 +83,7 @@ class Dropdown extends React.PureComponent {
         itemToString={item => item.name}
         onChange={onChange}
         onUserAction={this.onUserAction}
+        labelId={labelId}
       >
         {renderDropdown({
           color,
@@ -79,14 +92,25 @@ class Dropdown extends React.PureComponent {
           minWidth,
           itemWrapper,
           icon,
-          disableInput
+          disableInput,
+          title,
+          labelId
         })}
       </Downshift>
     )
   }
 }
 
-const renderDropdown = ({ color, list, minWidth, itemWrapper, icon, disableInput }) => ({
+const renderDropdown = ({
+  color,
+  list,
+  minWidth,
+  itemWrapper,
+  icon,
+  disableInput,
+  title,
+  labelId
+}) => ({
   isOpen,
   highlightedIndex,
   selectedItem,
@@ -97,6 +121,7 @@ const renderDropdown = ({ color, list, minWidth, itemWrapper, icon, disableInput
 }) => {
   return (
     <DropdownContainer {...getRootProps({ refKey: 'innerRef' })} minWidth={minWidth}>
+      {title && <VisuallyHidden id={labelId}>{title}</VisuallyHidden>}
       <DropdownIcon isOpen={isOpen}>{icon}</DropdownIcon>
       <SelectedItem
         getToggleButtonProps={getToggleButtonProps}
@@ -193,6 +218,7 @@ const SelectedItem = ({
     <span
       {...getToggleButtonProps({ tabIndex: 0 })}
       className={`dropdown-display ${isOpen ? 'is-open' : ''}`}
+      data-cy="theme-selector-button"
     >
       <input
         {...getInputProps({ placeholder: children, id: `downshift-input-${children}`, disabled })}
@@ -212,7 +238,8 @@ const SelectedItem = ({
             border-radius: ${hasIcon ? '0 3px 3px 0' : '3px'};
             outline: none;
           }
-          .dropdown-display:hover {
+          .dropdown-display:hover,
+          .dropdown-display:focus {
             background: ${COLORS.HOVER};
           }
 
@@ -267,7 +294,7 @@ const ListItem = ({ children, color, isHighlighted, isSelected, itemWrapper, ite
   const itemColor = color || COLORS.SECONDARY
 
   return (
-    <li {...rest} className="dropdown-list-item">
+    <li {...rest} className="dropdown-list-item" data-cy="dropdown-item">
       {itemWrapper ? (
         itemWrapper({ children, color: itemColor, item, isSelected })
       ) : (

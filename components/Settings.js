@@ -9,7 +9,7 @@ import Popout, { managePopout } from './Popout'
 import Button from './Button'
 import Presets from './Presets'
 import { COLORS, DEFAULT_PRESETS } from '../lib/constants'
-import { toggle, getPresets, savePresets, generateId } from '../lib/util'
+import { toggle, getPresets, savePresets, generateId, fileToJSON } from '../lib/util'
 import SettingsIcon from './svg/Settings'
 import * as Arrows from './svg/Arrows'
 
@@ -95,7 +95,8 @@ const WindowSettings = React.memo(
               border-right: 1px solid ${COLORS.SECONDARY};
             }
 
-            .drop-shadow-options {
+            .drop-shadow-options :global(.slider-bg),
+            .drop-shadow-options :global(label) {
               opacity: 0.5;
             }
           `}
@@ -106,10 +107,14 @@ const WindowSettings = React.memo(
 )
 
 const TypeSettings = React.memo(
-  ({ onChange, font, size, lineHeight, onWidthChanging, onWidthChanged }) => {
+  ({ onChange, onUpload, font, size, lineHeight, onWidthChanging, onWidthChanged }) => {
     return (
       <div className="settings-content">
-        <FontSelect selected={font} onChange={onChange.bind(null, 'fontFamily')} />
+        <FontSelect
+          selected={font}
+          onUpload={onUpload}
+          onChange={onChange.bind(null, 'fontFamily')}
+        />
         <Slider
           label="Size"
           value={size}
@@ -125,7 +130,7 @@ const TypeSettings = React.memo(
           value={lineHeight}
           minValue={90}
           maxValue={250}
-          usePercentage={true}
+          unit="%"
           onChange={onChange.bind(null, 'lineHeight')}
         />
       </div>
@@ -135,10 +140,42 @@ const TypeSettings = React.memo(
 
 const resetButtonStyle = { borderTop: `1px solid ${COLORS.SECONDARY}` }
 
-const MiscSettings = React.memo(({ format, reset }) => {
+const MiscSettings = React.memo(({ format, reset, applyPreset, settings }) => {
+  const input = React.useRef(null)
+  let download
+  try {
+    download = `data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(settings))}`
+  } catch (error) {
+    // pass
+  }
   return (
     <div className="settings-content">
-      <Button center onClick={format}>
+      <div className="row">
+        <input
+          hidden
+          ref={input}
+          type="file"
+          accept=".json"
+          onChange={async e => {
+            const json = await fileToJSON(e.target.files[0])
+            if (json) {
+              applyPreset(json)
+            }
+          }}
+        />
+        <Button
+          width="50%"
+          center
+          style={{ borderRight: `1px solid ${COLORS.SECONDARY}` }}
+          onClick={() => input.current.click()}
+        >
+          Import config
+        </Button>
+        <Button center Component="a" href={download} download="carbon-config.json">
+          Export config
+        </Button>
+      </div>
+      <Button center onClick={format} style={resetButtonStyle}>
         Prettify code
       </Button>
       <Button center color={COLORS.RED} onClick={reset} style={resetButtonStyle}>
@@ -146,9 +183,18 @@ const MiscSettings = React.memo(({ format, reset }) => {
       </Button>
       <style jsx>
         {`
+          .row {
+            display: flex;
+            flex: 1;
+          }
           .settings-content {
             display: flex;
             flex-direction: column;
+          }
+          .settings-content :global(a) {
+            display: flex;
+            flex: 1;
+            user-drag: none;
           }
         `}
       </style>
@@ -241,6 +287,12 @@ class Settings extends React.PureComponent {
     this.setState({ previousSettings: null })
   }
 
+  handleFontUpload = (id, url) => {
+    this.props.onChange('fontFamily', id)
+    this.props.onChange('fontUrl', url)
+    this.props.toggleVisibility()
+  }
+
   getSettingsFromProps = () =>
     omitBy(this.props, (v, k) => typeof v === 'function' || k === 'preset')
 
@@ -321,6 +373,7 @@ class Settings extends React.PureComponent {
         return (
           <TypeSettings
             onChange={this.handleChange}
+            onUpload={this.handleFontUpload}
             onWidthChanging={this.handleWidthChanging}
             onWidthChanged={this.handleWidthChanged}
             font={this.props.fontFamily}
@@ -328,8 +381,17 @@ class Settings extends React.PureComponent {
             lineHeight={this.props.lineHeight}
           />
         )
-      case 'Misc':
-        return <MiscSettings format={this.props.format} reset={this.handleReset} />
+      case 'Misc': {
+        const settings = this.getSettingsFromProps()
+        return (
+          <MiscSettings
+            format={this.props.format}
+            reset={this.handleReset}
+            applyPreset={this.props.applyPreset}
+            settings={settings}
+          />
+        )
+      }
       default:
         return null
     }
@@ -342,6 +404,7 @@ class Settings extends React.PureComponent {
     return (
       <div className="settings-container" ref={this.settingsRef}>
         <Button
+          title="Settings Menu"
           border
           center
           selected={isVisible}

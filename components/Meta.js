@@ -5,8 +5,11 @@ import Reset from './style/Reset'
 import Font from './style/Font'
 import Typography from './style/Typography'
 
+const HIGHLIGHTS_ONLY = ['shades-of-purple', 'vscode']
 const LOCAL_STYLESHEETS = ['one-light', 'one-dark', 'verminal', 'night-owl', 'nord']
-const CDN_STYLESHEETS = THEMES.filter(t => LOCAL_STYLESHEETS.indexOf(t.id) < 0)
+const CDN_STYLESHEETS = THEMES.filter(
+  t => LOCAL_STYLESHEETS.indexOf(t.id) < 0 && HIGHLIGHTS_ONLY.indexOf(t.id) < 0
+)
 
 export function Link({ href }) {
   return (
@@ -23,7 +26,7 @@ export const StylesheetLink = ({ theme }) => {
     href = `/static/themes/${theme}.css`
   } else {
     const themeDef = THEMES_HASH[theme]
-    href = `//cdnjs.cloudflare.com/ajax/libs/codemirror/5.42.2/theme/${themeDef &&
+    href = `//cdnjs.cloudflare.com/ajax/libs/codemirror/5.47.0/theme/${themeDef &&
       (themeDef.link || themeDef.id)}.min.css`
   }
 
@@ -31,7 +34,7 @@ export const StylesheetLink = ({ theme }) => {
 }
 
 export const CodeMirrorLink = () => (
-  <Link href="//cdnjs.cloudflare.com/ajax/libs/codemirror/5.42.2/codemirror.min.css" />
+  <Link href="//cdnjs.cloudflare.com/ajax/libs/codemirror/5.47.0/codemirror.min.css" />
 )
 
 const title = 'Carbon'
@@ -59,13 +62,13 @@ export const MetaTags = React.memo(() => (
 export const MetaLinks = React.memo(() => {
   return (
     <React.Fragment>
-      <Link href="//cdnjs.cloudflare.com/ajax/libs/codemirror/5.42.2/theme/seti.min.css" />
+      <Link href="//cdnjs.cloudflare.com/ajax/libs/codemirror/5.47.0/theme/seti.min.css" />
       <CodeMirrorLink />
       {LOCAL_STYLESHEETS.map(id => (
         <Link key={id} href={`/static/themes/${id}.css`} />
       ))}
       {CDN_STYLESHEETS.map(themeDef => {
-        const href = `//cdnjs.cloudflare.com/ajax/libs/codemirror/5.42.2/theme/${themeDef &&
+        const href = `//cdnjs.cloudflare.com/ajax/libs/codemirror/5.47.0/theme/${themeDef &&
           (themeDef.link || themeDef.id)}.min.css`
         return <Link key={themeDef.id} href={href} />
       })}

@@ -11,31 +11,36 @@ import {
   COLORS,
   LANGUAGE_MODE_HASH,
   LANGUAGE_NAME_HASH,
-  THEMES_HASH,
-  DEFAULT_SETTINGS
+  LANGUAGE_MIME_HASH,
+  DEFAULT_SETTINGS,
+  THEMES_HASH
 } from '../lib/constants'
 
 const Watermark = dynamic(() => import('./svg/Watermark'), {
   loading: () => null
 })
 
+function searchLanguage(l) {
+  const config = LANGUAGE_NAME_HASH[l] || LANGUAGE_MODE_HASH[l] || LANGUAGE_MIME_HASH[l]
+
+  if (config) {
+    return config.mime || config.mode
+  }
+}
+
 class Carbon extends React.PureComponent {
   static defaultProps = {
-    onAspectRatioChange: () => {},
     onChange: () => {}
   }
 
-  componentDidMount() {
-    const node = this.props.innerRef.current
-    this.mo = new MutationObserver(() => {
-      const ratio = node.clientWidth / node.clientHeight
-      this.props.onAspectRatioChange(ratio)
-    })
-    this.mo.observe(node, { attributes: true, childList: true, subtree: true })
-  }
-
-  componentWillUnmount() {
-    this.mo.disconnect()
+  componentDidUpdate(prevProps) {
+    // TODO keep opacities in state
+    if (
+      prevProps.config.theme != this.props.config.theme ||
+      prevProps.config.language != this.props.config.language
+    ) {
+      this.prevLine = null
+    }
   }
 
   handleLanguageChange = debounce(
@@ -43,12 +48,17 @@ class Carbon extends React.PureComponent {
       if (language === 'auto') {
         // try to set the language
         const detectedLanguage = hljs.highlightAuto(newCode).language
-        const languageMode =
-          LANGUAGE_MODE_HASH[detectedLanguage] || LANGUAGE_NAME_HASH[detectedLanguage]
+        const languageMode = searchLanguage(detectedLanguage)
 
         if (languageMode) {
-          return languageMode.mime || languageMode.mode
+          return languageMode
         }
+      }
+
+      const languageMode = searchLanguage(language)
+
+      if (languageMode) {
+        return languageMode
       }
 
       return language
@@ -66,10 +76,40 @@ class Carbon extends React.PureComponent {
     }
   }
 
+  prevLine = null
+  onGutterClick = (editor, lineNumber, gutter, e) => {
+    editor.display.view.forEach((line, i, arr) => {
+      if (i != lineNumber) {
+        if (this.prevLine == null) {
+          line.text.style.opacity = 0.5
+          line.gutter.style.opacity = 0.5
+        }
+      } else {
+        if (e.shiftKey && this.prevLine != null) {
+          for (
+            let index = Math.min(this.prevLine, i);
+            index < Math.max(this.prevLine, i) + 1;
+            index++
+          ) {
+            arr[index].text.style.opacity = arr[this.prevLine].text.style.opacity
+            arr[index].gutter.style.opacity = arr[this.prevLine].gutter.style.opacity
+          }
+        } else {
+          line.text.style.opacity = line.text.style.opacity == 1 ? 0.5 : 1
+          line.gutter.style.opacity = line.gutter.style.opacity == 1 ? 0.5 : 1
+        }
+      }
+    })
+    this.prevLine = lineNumber
+  }
+
   render() {
     const config = { ...DEFAULT_SETTINGS, ...this.props.config }
 
-    const languageMode = this.handleLanguageChange(this.props.children, config.language)
+    const languageMode = this.handleLanguageChange(
+      this.props.children,
+      config.language && config.language.toLowerCase()
+    )
 
     const options = {
       lineNumbers: config.lineNumbers,
@@ -90,6 +130,10 @@ class Carbon extends React.PureComponent {
       (this.props.config.backgroundImage && this.props.config.backgroundImageSelection) ||
       this.props.config.backgroundImage
 
+    const themeConfig = this.props.theme || THEMES_HASH[config.theme]
+
+    const light = themeConfig && themeConfig.light
+
     const content = (
       <div className="container">
         {config.windowControls ? (
@@ -97,6 +141,7 @@ class Carbon extends React.PureComponent {
             theme={config.windowTheme}
             code={this.props.children}
             copyable={this.props.copyable}
+            light={light}
           />
         ) : null}
         <CodeMirror
@@ -104,8 +149,9 @@ class Carbon extends React.PureComponent {
           onBeforeChange={this.onBeforeChange}
           value={this.props.children}
           options={options}
+          onGutterClick={this.onGutterClick}
         />
-        {config.watermark && <Watermark light={THEMES_HASH[config.theme].light} />}
+        {config.watermark && <Watermark light={light} />}
         <div className="container-bg">
           <div className="white eliminateOnRender" />
           <div className="alpha eliminateOnRender" />
@@ -121,7 +167,7 @@ class Carbon extends React.PureComponent {
             }
 
             .container :global(.watermark) {
-              fill-opacity: 0.3;
+              fill-opacity: 0.75;
               position: absolute;
               z-index: 2;
               bottom: calc(${config.paddingVertical} + 16px);
@@ -148,11 +194,11 @@ class Carbon extends React.PureComponent {
             .container .bg {
               ${this.props.config.backgroundMode === 'image'
                 ? `background: url(${backgroundImage});
-                     background-size: cover;
-                     background-repeat: no-repeat;`
+                    background-size: cover;
+                    background-repeat: no-repeat;`
                 : `background: ${this.props.config.backgroundColor || config.backgroundColor};
-                     background-size: auto;
-                     background-repeat: repeat;`} position: absolute;
+                    background-size: auto;
+                    background-repeat: repeat;`} position: absolute;
               top: 0px;
               right: 0px;
               bottom: 0px;
@@ -199,7 +245,8 @@ class Carbon extends React.PureComponent {
               user-select: none;
             }
 
-            .container :global(.CodeMirror-scroll) {
+            .container :global(.CodeMirror-scroll),
+            .container :global(.CodeMirror-hscrollbar) {
               overflow: hidden !important;
             }
 
@@ -213,6 +260,10 @@ class Carbon extends React.PureComponent {
 
             .container :global(.window-controls + .CodeMirror__container > .CodeMirror) {
               padding-top: 48px;
+            }
+
+            .container :global(.CodeMirror-linenumber) {
+              cursor: pointer;
             }
           `}
         </style>
