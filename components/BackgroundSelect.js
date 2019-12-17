@@ -1,15 +1,14 @@
 import React from 'react'
-import colornames from 'colornames'
 
 import ImagePicker from './ImagePicker'
 import ColorPicker from './ColorPicker'
 import Button from './Button'
 import Popout, { managePopout } from './Popout'
 import { COLORS, DEFAULT_BG_COLOR } from '../lib/constants'
-import { capitalize, stringifyRGBA } from '../lib/util'
+import { stringifyRGBA } from '../lib/util'
 
 function validateColor(str) {
-  if (/#\d{3,6}|rgba{0,1}\(.*?\)/gi.test(str) || colornames(str)) {
+  if (/#\d{3,6}|rgba{0,1}\(.*?\)/gi.test(str) || /\w+/gi.test(str)) {
     return str
   }
 }
@@ -24,7 +23,16 @@ class BackgroundSelect extends React.PureComponent {
   handlePickColor = ({ rgb }) => this.props.onChange({ backgroundColor: stringifyRGBA(rgb) })
 
   render() {
-    const { color, mode, image, onChange, isVisible, toggleVisibility, carbonRef } = this.props
+    const {
+      color,
+      mode,
+      image,
+      onChange,
+      isVisible,
+      toggleVisibility,
+      carbonRef,
+      updateHighlights
+    } = this.props
 
     const background = validateColor(color) ? color : DEFAULT_BG_COLOR
 
@@ -55,15 +63,16 @@ class BackgroundSelect extends React.PureComponent {
         >
           <div className="picker-tabs">
             {['color', 'image'].map(tab => (
-              <div
-                role="button"
-                tabIndex={0}
+              <Button
                 key={tab}
-                className={`picker-tab ${mode === tab ? 'active' : ''}`}
+                padding="8px 0"
+                center
+                className="capitalize"
                 onClick={this.selectTab.bind(null, tab)}
+                background={mode === tab ? COLORS.BLACK : COLORS.DARK_GRAY}
               >
-                {capitalize(tab)}
-              </div>
+                {tab}
+              </Button>
             ))}
           </div>
           <div className="picker-tabs-contents">
@@ -71,7 +80,12 @@ class BackgroundSelect extends React.PureComponent {
               <ColorPicker color={color} onChange={this.handlePickColor} />
             </div>
             <div hidden={mode !== 'image'}>
-              <ImagePicker onChange={onChange} imageDataURL={image} aspectRatio={aspectRatio} />
+              <ImagePicker
+                onChange={onChange}
+                imageDataURL={image}
+                aspectRatio={aspectRatio}
+                updateHighlights={updateHighlights}
+              />
             </div>
           </div>
         </Popout>
@@ -121,22 +135,12 @@ class BackgroundSelect extends React.PureComponent {
               border-bottom: 2px solid ${COLORS.SECONDARY};
             }
 
-            .picker-tab {
-              user-select: none;
-              cursor: pointer;
-              background: ${COLORS.DARK_GRAY};
-              width: 50%;
-              text-align: center;
-              padding: 8px 0;
+            .picker-tabs :global(button) {
               border-right: 1px solid ${COLORS.SECONDARY};
             }
 
-            .picker-tab:last-child {
+            .picker-tabs :global(button:last-child) {
               border-right: none;
-            }
-
-            .picker-tab.active {
-              background: none;
             }
           `}
         </style>

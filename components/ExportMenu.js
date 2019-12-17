@@ -1,6 +1,6 @@
 import React from 'react'
 import { withRouter } from 'next/router'
-import { useCopyTextHandler, useOnline } from '@dawnlabs/tacklebox'
+import { useCopyTextHandler, useOnline, useKeyboardListener, useAsyncCallback } from 'actionsack'
 
 import { COLORS, EXPORT_SIZES } from '../lib/constants'
 import Button from './Button'
@@ -9,7 +9,7 @@ import Popout, { managePopout } from './Popout'
 
 const toIFrame = url =>
   `<iframe
-  src="${location.origin}/embed${url}"
+  src="${location.origin}/embed${url.replace(/^\/\?/, '?')}"
   style="transform:scale(0.7); width:1024px; height:473px; border:0; overflow:hidden;"
   sandbox="allow-scripts allow-same-origin">
 </iframe>
@@ -21,7 +21,11 @@ const MAX_PAYLOAD_SIZE = 5e6 // bytes
 function verifyPayloadSize(str) {
   if (typeof str !== 'string') return true
 
-  return new Blob([str]).size < MAX_PAYLOAD_SIZE
+  if (typeof window !== 'undefined') {
+    return new Blob([str]).size < MAX_PAYLOAD_SIZE
+  }
+
+  return Buffer.byteLength(str, 'utf8')
 }
 
 const CopyEmbed = withRouter(({ router: { asPath }, mapper, title, margin }) => {
@@ -63,11 +67,14 @@ function ExportMenu({
   exportSize,
   isVisible,
   toggleVisibility,
-  export: exportImage
+  exportImage: exp
 }) {
   const tooLarge = React.useMemo(() => !verifyPayloadSize(backgroundImage), [backgroundImage])
   const online = useOnline()
   const isSafari = useSafari()
+
+  const [exportImage, { loading }] = useAsyncCallback(exp)
+  useKeyboardListener('⌘-⇧-e', () => exportImage())
 
   const disablePNG = isSafari && (tooLarge || !online)
 
@@ -92,8 +99,9 @@ function ExportMenu({
           selected={isVisible}
           onClick={toggleVisibility}
           data-cy="export-button"
+          style={{ width: 92 }}
         >
-          Export
+          {loading ? 'Exporting...' : 'Export'}
         </Button>
       </div>
       <Popout
@@ -135,7 +143,7 @@ function ExportMenu({
             </div>
           </div>
           <div className="save-container">
-            <span>Save as</span>
+            <span>Export</span>
             <div>
               {!disablePNG && (
                 <Button
@@ -145,6 +153,7 @@ function ExportMenu({
                   color={COLORS.DARK_PURPLE}
                   onClick={handleExport('png')}
                   id="export-png"
+                  disabled={loading}
                 >
                   PNG
                 </Button>
@@ -155,6 +164,7 @@ function ExportMenu({
                 color={COLORS.DARK_PURPLE}
                 onClick={handleExport('svg')}
                 id="export-svg"
+                disabled={loading}
               >
                 SVG
               </Button>
@@ -167,6 +177,7 @@ function ExportMenu({
           .export-menu-container {
             position: relative;
             color: ${COLORS.PURPLE};
+            flex: 1;
           }
 
           .flex {

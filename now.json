@@ -1,32 +1,66 @@
 {
   "name": "carbon",
+  "alias": "carbon.now.sh",
   "version": 2,
   "public": true,
-  "builds": [{ "src": "package.json", "use": "@now/static-build" }],
+  "builds": [{ "src": "package.json", "use": "@now/next" }],
   "routes": [
-    { "src": "^/about(.*)", "dest": "/about" },
-    { "src": "^/embed(.*)", "dest": "/embed" },
-    { "src": "^/_next/(.*)", "dest": "/_next/$1" },
-    { "src": "^/robots.txt", "dest": "/static/robots.txt" },
+    {
+      "src": "^/privacy/?",
+      "status": 307,
+      "headers": {
+        "Location": "https://www.notion.so/PRIVACY-POLICY-e9847a7777714eb08ba15a7a8eaee937"
+      }
+    },
+    {
+      "src": "^/terms/?",
+      "status": 307,
+      "headers": {
+        "Location": "https://www.notion.so/TERMS-OF-USE-ff2ce22a7e9848c89c6be46b44297583"
+      }
+    },
     {
       "src": "^/service-worker.js$",
-      "dest": "/_next/service-worker.js",
+      "dest": "/_next/static/service-worker.js",
       "headers": {
         "Service-Worker-Allowed": "/"
       }
     },
     {
-      "src": "^/static/(.*)",
-      "dest": "/static/$1",
+      "src": "/",
+      "continue": true,
       "headers": {
-        "cache-control": "public, max-age=43200, immutable"
+        "X-Frame-Options": "SAMEORIGIN"
       }
     },
-    { "src": "^/(.*)", "dest": "/index.html" }
+    {
+      "src": "^/(.*)/?",
+      "continue": true,
+      "headers": {
+        "X-XSS-Protection": "1; mode=block",
+        "X-Content-Type-Options": "nosniff",
+        "Referrer-Policy": "no-referrer-when-downgrade",
+        "Feature-Policy": "geolocation 'self'; microphone 'self'; camera 'self'"
+      }
+    },
+    {
+      "src": "/embed/",
+      "dest": "/embed"
+    },
+    {
+      "src": "/about/",
+      "dest": "/about"
+    },
+    { "handle": "filesystem" }
   ],
   "build": {
     "env": {
-      "NODE_ENV": "production"
+      "NODE_ENV": "production",
+      "FIREBASE_PROJECT_ID": "@carbon-firebase-project-id",
+      "FIREBASE_MESSAGING_SENDER_ID": "@carbon-firebase-messaging-sender-id",
+      "FIREBASE_FE_APP_ID": "@carbon-firebase-fe-app-id",
+      "FIREBASE_API_KEY": "@carbon-firebase-api-key",
+      "STRIPE_PUBLIC_KEY": "@carbon-stripe-public-key"
     }
   },
   "github": {

@@ -1,8 +1,9 @@
 // Theirs
 import React from 'react'
 import domtoimage from 'dom-to-image'
-import dynamic from 'next/dynamic'
 import Dropzone from 'dropperx'
+import debounce from 'lodash.debounce'
+import dynamic from 'next/dynamic'
 
 // Ours
 import ApiContext from './ApiContext'
@@ -10,10 +11,13 @@ import Dropdown from './Dropdown'
 import Settings from './Settings'
 import Toolbar from './Toolbar'
 import Overlay from './Overlay'
+import BackgroundSelect from './BackgroundSelect'
 import Carbon from './Carbon'
 import ExportMenu from './ExportMenu'
 import Themes from './Themes'
 import TweetButton from './TweetButton'
+import FontFace from './FontFace'
+import LanguageIcon from './svg/Language'
 import {
   LANGUAGES,
   LANGUAGE_MIME_HASH,
@@ -25,19 +29,19 @@ import {
   DEFAULT_CODE,
   DEFAULT_SETTINGS,
   DEFAULT_LANGUAGE,
-  DEFAULT_PRESET_ID,
   DEFAULT_THEME,
   FONTS
 } from '../lib/constants'
 import { serializeState, getRouteState } from '../lib/routing'
 import { getSettings, unescapeHtml, formatCode, omit } from '../lib/util'
-import LanguageIcon from './svg/Language'
 
 const languageIcon = <LanguageIcon />
 
-const BackgroundSelect = dynamic(() => import('./BackgroundSelect'), {
+const SnippetToolbar = dynamic(() => import('./SnippetToolbar'), {
   loading: () => null
 })
+
+const getConfig = omit(['code'])
 
 class Editor extends React.Component {
   static contextType = ApiContext
@@ -46,11 +50,11 @@ class Editor extends React.Component {
     super(props)
     this.state = {
       ...DEFAULT_SETTINGS,
-      preset: DEFAULT_PRESET_ID,
+      ...this.props.snippet,
       loading: true
     }
 
-    this.export = this.export.bind(this)
+    this.exportImage = this.exportImage.bind(this)
     this.upload = this.upload.bind(this)
     this.updateSetting = this.updateSetting.bind(this)
     this.updateLanguage = this.updateLanguage.bind(this)
@@ -61,22 +65,13 @@ class Editor extends React.Component {
   }
 
   async componentDidMount() {
-    const { queryState, parameter } = getRouteState(this.props.router)
-
-    // TODO we could create an interface for loading this config, so that it looks identical
-    // whether config is loaded from localStorage, gist, or even something like IndexDB
-    let gistState
-    if (this.context.gist && parameter) {
-      const { config, ...gist } = (await this.context.gist.get(parameter)) || {}
-      if (typeof config === 'object') {
-        this.gist = gist
-        gistState = config
-      }
-    }
+    const { queryState } = getRouteState(this.props.router)
 
     const newState = {
+      // IDEA: we could create an interface for loading this config, so that it looks identical
+      // whether config is loaded from localStorage, gist, or even something like IndexDB
       // Load options from gist or localStorage
-      ...(gistState ? gistState : getSettings(localStorage)),
+      ...(this.props.snippet ? null : getSettings(localStorage)),
       // and then URL params
       ...queryState,
       loading: false
@@ -91,11 +86,15 @@ class Editor extends React.Component {
       newState.fontFamily = DEFAULT_SETTINGS.fontFamily
     }
 
-    this.updateState(newState)
+    this.setState(newState)
 
     this.isSafari =
       window.navigator &&
       window.navigator.userAgent.indexOf('Safari') !== -1 &&
+      window.navigator.userAgent.indexOf('Chrome') === -1
+    this.isFirefox =
+      window.navigator &&
+      window.navigator.userAgent.indexOf('Firefox') !== -1 &&
       window.navigator.userAgent.indexOf('Chrome') === -1
   }
 
@@ -103,13 +102,11 @@ class Editor extends React.Component {
 
   getTheme = () => this.props.themes.find(t => t.id === this.state.theme) || DEFAULT_THEME
 
-  updateState = updates => {
-    this.setState(updates, () => {
-      if (!this.gist) {
-        this.props.onUpdate(this.state)
-      }
-    })
-  }
+  onUpdate = debounce(updates => this.props.onUpdate(updates), 750, {
+    trailing: true,
+    leading: true
+  })
+  updateState = updates => this.setState(updates, () => this.onUpdate(this.state))
 
   updateCode = code => this.updateState({ code })
 
@@ -118,7 +115,8 @@ class Editor extends React.Component {
       format,
       type,
       squared = this.state.squaredImage,
-      exportSize = (EXPORT_SIZES_HASH[this.state.exportSize] || DEFAULT_EXPORT_SIZE).value
+      exportSize = (EXPORT_SIZES_HASH[this.state.exportSize] || DEFAULT_EXPORT_SIZE).value,
+      includeTransparentRow = false
     } = { format: 'png' }
   ) {
     // if safari, get image from api
@@ -143,9 +141,9 @@ class Editor extends React.Component {
 
     if (isPNG) {
       node.querySelectorAll('span[role="presentation"]').forEach(node => {
-        if (node.innerText && node.innerText.match(/%[A-Za-z0-9]{2}/)) {
+        if (node.innerText && node.innerText.match(/%[A-Fa-f0-9]{2}/)) {
           map.set(node, node.innerHTML)
-          node.innerText.match(/%[A-Za-z0-9]{2}/g).forEach(t => {
+          node.innerText.match(/%[A-Fa-f0-9]{2}/g).forEach(t => {
             node.innerText = node.innerText.replace(t, encodeURIComponent(t))
           })
         }
@@ -163,7 +161,16 @@ class Editor extends React.Component {
       },
       filter: n => {
         if (n.className) {
-          return String(n.className).indexOf('eliminateOnRender') < 0
+          const className = String(n.className)
+          if (className.includes('eliminateOnRender')) {
+            return false
+          }
+          if (className.includes('CodeMirror-cursors')) {
+            return false
+          }
+          if (className.includes('twitter-png-fix')) {
+            return includeTransparentRow
+          }
         }
         return true
       },
@@ -211,12 +218,12 @@ class Editor extends React.Component {
 
   updateSetting(key, value) {
     this.updateState({ [key]: value })
-    if (Object.prototype.hasOwnProperty.call(DEFAULT_SETTINGS, key)) {
+    if (Object.prototype.hasOwnProperty.call(DEFAULT_SETTINGS, key) && key !== 'preset') {
       this.updateState({ preset: null })
     }
   }
 
-  export(format = 'png', options = {}) {
+  exportImage(format = 'png', options = {}) {
     const link = document.createElement('a')
 
     const prefix = options.filename || 'carbon'
@@ -224,6 +231,9 @@ class Editor extends React.Component {
     return this.getCarbonImage({ format, type: 'blob' }).then(url => {
       if (format !== 'open') {
         link.download = `${prefix}.${format}`
+      }
+      if (this.isFirefox) {
+        link.target = '_blank'
       }
       link.href = url
       document.body.appendChild(link)
@@ -233,12 +243,12 @@ class Editor extends React.Component {
   }
 
   resetDefaultSettings() {
-    this.updateState({ ...DEFAULT_SETTINGS, preset: DEFAULT_PRESET_ID })
+    this.updateState(DEFAULT_SETTINGS)
     this.props.onReset()
   }
 
   upload() {
-    this.getCarbonImage({ format: 'png' }).then(
+    this.getCarbonImage({ format: 'png', includeTransparentRow: true }).then(
       this.context.tweet.bind(null, this.state.code || DEFAULT_CODE)
     )
   }
@@ -304,6 +314,28 @@ class Editor extends React.Component {
         // create toast here in the future
       })
 
+  handleSnippetCreate = () =>
+    this.context.snippet
+      .create(this.state)
+      .then(data => this.props.setSnippet(data))
+      .then(() =>
+        this.props.setToasts({
+          type: 'SET',
+          toasts: [{ children: 'Snippet duplicated!', timeout: 3000 }]
+        })
+      )
+
+  handleSnippetDelete = () =>
+    this.context.snippet
+      .delete(this.props.snippet.id)
+      .then(() => this.props.setSnippet(null))
+      .then(() =>
+        this.props.setToasts({
+          type: 'SET',
+          toasts: [{ children: 'Snippet deleted', timeout: 3000 }]
+        })
+      )
+
   render() {
     const {
       highlights,
@@ -315,7 +347,7 @@ class Editor extends React.Component {
       exportSize
     } = this.state
 
-    const config = omit(this.state, ['code'])
+    const config = getConfig(this.state)
 
     const theme = this.getTheme()
 
@@ -343,29 +375,33 @@ class Editor extends React.Component {
             list={LANGUAGES}
             onChange={this.updateLanguage}
           />
-          <BackgroundSelect
-            onChange={this.updateBackground}
-            mode={backgroundMode}
-            color={backgroundColor}
-            image={backgroundImage}
-            carbonRef={this.carbonNode.current}
-          />
-          <Settings
-            {...config}
-            onChange={this.updateSetting}
-            resetDefaultSettings={this.resetDefaultSettings}
-            format={this.format}
-            applyPreset={this.applyPreset}
-            getCarbonImage={this.getCarbonImage}
-          />
-          <div className="buttons">
-            <TweetButton onClick={this.upload} />
-            <ExportMenu
-              onChange={this.updateSetting}
-              export={this.export}
-              exportSize={exportSize}
-              backgroundImage={backgroundImage}
+          <div className="toolbar-second-row">
+            <BackgroundSelect
+              onChange={this.updateBackground}
+              updateHighlights={this.updateHighlights}
+              mode={backgroundMode}
+              color={backgroundColor}
+              image={backgroundImage}
+              carbonRef={this.carbonNode.current}
             />
+            <Settings
+              {...config}
+              onChange={this.updateSetting}
+              resetDefaultSettings={this.resetDefaultSettings}
+              format={this.format}
+              applyPreset={this.applyPreset}
+              getCarbonImage={this.getCarbonImage}
+            />
+            <div id="style-editor-button" />
+            <div className="buttons">
+              <TweetButton onClick={this.upload} />
+              <ExportMenu
+                onChange={this.updateSetting}
+                exportImage={this.exportImage}
+                exportSize={exportSize}
+                backgroundImage={backgroundImage}
+              />
+            </div>
           </div>
         </Toolbar>
 
@@ -389,15 +425,14 @@ class Editor extends React.Component {
             </Overlay>
           )}
         </Dropzone>
-        <style jsx global>
-          {`
-            @font-face {
-              font-family: ${config.fontUrl ? config.fontFamily : ''};
-              src: url(${config.fontUrl || ''}) format('woff');
-              font-display: swap;
-            }
-          `}
-        </style>
+        {this.props.snippet && (
+          <SnippetToolbar
+            snippet={this.props.snippet}
+            onCreate={this.handleSnippetCreate}
+            onDelete={this.handleSnippetDelete}
+          />
+        )}
+        <FontFace {...config} />
         <style jsx>
           {`
             .editor {
@@ -410,6 +445,14 @@ class Editor extends React.Component {
             .buttons {
               display: flex;
               margin-left: auto;
+            }
+            .toolbar-second-row {
+              height: 40px;
+              display: flex;
+              flex: 1;
+            }
+            .toolbar-second-row > :global(div:not(:last-of-type)) {
+              margin-right: 0.5rem;
             }
           `}
         </style>

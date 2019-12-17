@@ -5,22 +5,37 @@ import { COLORS } from '../lib/constants'
 const Footer = () => (
   <footer role="contentinfo" className="mt3">
     <nav className="mt3">
-      <Link href="/about">
+      <Link href="/about" prefetch={false}>
         <a className="link" href="/about">
           about
         </a>
       </Link>
-      <a className="link" href="https://github.com/dawnlabs/carbon/issues/new">
-        send feedback
+      <a
+        className="link"
+        href="https://opencollective.com/carbon-app"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        sponsor
       </a>
-      <a className="link" href="https://github.com/dawnlabs/carbon">
+      <a className="link" href="https://github.com/carbon-app/carbon/issues/new">
+        feedback
+      </a>
+      <a className="link" href="https://github.com/carbon-app/carbon">
         source
       </a>
+      <a className="link" href="/terms">
+        terms
+      </a>
+      <a className="link" href="/privacy">
+        privacy
+      </a>
     </nav>
-    <div className="mt3 mb2">
-      a project by{' '}
-      <a className="dawn-link" href="https://dawnlabs.io">
-        Dawn Labs
+
+    <div className="mt2 mb2">
+      created by{' '}
+      <a className="author-link" href="https://twitter.com/carbon_app">
+        @carbon_app
       </a>{' '}
       ¬
     </div>
@@ -28,6 +43,7 @@ const Footer = () => (
       {`
         footer {
           font-size: 14px;
+          text-align: center;
         }
 
         footer > div {
@@ -35,20 +51,24 @@ const Footer = () => (
           color: ${COLORS.GRAY};
         }
 
+        nav {
+          margin: 0 auto;
+        }
+
         a {
-          margin-right: 16px;
+          margin-right: 1rem;
         }
 
         a:last-child {
           margin-right: 0;
         }
 
-        .dawn-link {
+        .author-link {
           color: ${COLORS.PRIMARY};
           text-decoration: none;
         }
 
-        .dawn-link:hover {
+        .author-link:hover {
           color: #fff;
         }
       `}

@@ -3,6 +3,7 @@
 If you have discovered a bug or have a feature suggestion, feel free to create an issue on GitHub.
 
 If you'd like to make some changes yourself, see the following:
+
 1. [Fork](https://help.github.com/articles/fork-a-repo/) this repository to your own GitHub account and then [clone](https://help.github.com/articles/cloning-a-repository/) it to your local device
 2. Make sure yarn is globally installed (`npm install -g yarn`)
 3. Run `yarn` to download required packages.
@@ -12,9 +13,16 @@ If you'd like to make some changes yourself, see the following:
 
 This project follows the [all-contributors](https://github.com/kentcdodds/all-contributors) specification. Contributions of any kind are welcome!
 
-### A note on adding themes/languages
+### Automated Setup
+
+Alternatively, you can also open this repository in Gitpod, an online IDE for GitHub. Just click on the button below and all of the above mentioned work is automated, so you don't have to worry about setting up your environment.
+
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/carbon-app/carbon)
+
+### Adding themes/languages
+
 We're happy to accept any PRs adding new themes and languages to Carbon! Currently there are a few ways to do so:
 
-1. If the [theme](https://codemirror.net/demo/theme.html) or [language](https://codemirror.net/mode/index.html) is supported in Codemirror, all you have to do is add a [constant](https://github.com/dawnlabs/carbon/blob/master/lib/constants.js) for it.
+1. If the [theme](https://codemirror.net/demo/theme.html) or [language](https://codemirror.net/mode/index.html) is supported in Codemirror, all you have to do is add a [constant](https://github.com/carbon-app/carbon/blob/master/lib/constants.js) for it.
 
-2. If it's not supported, you can add a Codemirror compliant [custom theme](https://github.com/dawnlabs/carbon/tree/master/static/themes) or [custom mode](https://github.com/dawnlabs/carbon/tree/master/lib/custom/modes) to implement it and add a constant like above.
+2. If it's not supported, you can add a Codemirror compliant [custom theme](https://github.com/carbon-app/carbon/tree/master/static/themes) or [custom mode](https://github.com/carbon-app/carbon/tree/master/lib/custom/modes) to implement it and add a constant like above.

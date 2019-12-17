@@ -146,7 +146,6 @@ export default () => (
         font-style: normal;
         text-transform: initial;
         letter-spacing: initial;
-        /* min-width: 848px; */
         min-height: 704px;
       }
 
@@ -171,7 +170,23 @@ export default () => (
 
       *::selection {
         background: rgba(255, 255, 255, 0.99);
-        color: #121212;
+        color: ${COLORS.BLACK};
+      }
+
+      kbd {
+        display: inline-block;
+        padding: 3px 5px; /* padding: 2px 4px; */
+        font-size: 9px;
+        font-weight: 700;
+        line-height: 1.2;
+        color: ${COLORS.DARK_GRAY};
+        vertical-align: middle;
+        background-color: #fafbfc; /* ${COLORS.SECONDARY}; */
+        border: 1px solid #c6cbd1;
+        border-bottom-color: #959da5;
+        border-radius: 3px;
+        box-shadow: inset 0 -1px 0 #959da5;
+        white-space: nowrap;
       }
 
       .link {
@@ -212,6 +227,14 @@ export default () => (
         height: 7.8%;
         top: -3.9%;
         left: -10%;
+      }
+
+      .row {
+        display: flex;
+      }
+
+      .capitalize {
+        text-transform: capitalize;
       }
 
       /* include just until we have a keyboard navigation style system */

@@ -1,9 +1,11 @@
 import React from 'react'
 import ReactCrop, { makeAspectCrop } from 'react-image-crop'
+import { useLocalStorage } from 'actionsack'
 
 import RandomImage from './RandomImage'
 import PhotoCredit from './PhotoCredit'
 import Input from './Input'
+import Toggle from './Toggle'
 import { Link } from './Meta'
 import { fileToDataURL } from '../lib/util'
 import ApiContext from './ApiContext'
@@ -40,7 +42,8 @@ const INITIAL_STATE = {
   crop: null,
   imageAspectRatio: null,
   pixelCrop: null,
-  photographer: null
+  photographer: null,
+  dataURL: null
 }
 
 export default class ImagePicker extends React.Component {
@@ -48,13 +51,14 @@ export default class ImagePicker extends React.Component {
   constructor(props) {
     super(props)
     this.state = INITIAL_STATE
+    this.selectMode = this.selectMode.bind(this)
     this.handleURLInput = this.handleURLInput.bind(this)
+    this.uploadImage = this.uploadImage.bind(this)
     this.selectImage = this.selectImage.bind(this)
     this.removeImage = this.removeImage.bind(this)
     this.onImageLoaded = this.onImageLoaded.bind(this)
     this.onCropChange = this.onCropChange.bind(this)
     this.onDragEnd = this.onDragEnd.bind(this)
-    this.selectMode = this.selectMode.bind(this)
   }
 
   static getDerivedStateFromProps(nextProps, state) {
@@ -73,9 +77,13 @@ export default class ImagePicker extends React.Component {
     return null
   }
 
+  selectMode(mode) {
+    this.setState({ mode })
+  }
+
   async onDragEnd() {
     if (this.state.pixelCrop) {
-      const croppedImg = await getCroppedImg(this.props.imageDataURL, this.state.pixelCrop)
+      const croppedImg = await getCroppedImg(this.state.dataURL, this.state.pixelCrop)
       this.props.onChange({ backgroundImageSelection: croppedImg })
     }
   }
@@ -102,18 +110,23 @@ export default class ImagePicker extends React.Component {
     })
   }
 
+  handleImageChange = (url, dataURL, photographer) => {
+    this.setState({ dataURL, photographer }, () => {
+      this.props.onChange({
+        backgroundImage: url,
+        backgroundImageSelection: null,
+        photographer
+      })
+    })
+  }
+
   handleURLInput(e) {
     e.preventDefault()
     const url = e.target[0].value
     return this.context
       .downloadThumbnailImage({ url })
-      .then(({ dataURL }) =>
-        this.props.onChange({
-          backgroundImage: dataURL,
-          backgroundImageSelection: null,
-          photographer: null
-        })
-      )
+      .then(res => res.dataURL)
+      .then(dataURL => this.handleImageChange(url, dataURL))
       .catch(err => {
         if (err.message.indexOf('Network Error') > -1) {
           this.setState({
@@ -124,22 +137,42 @@ export default class ImagePicker extends React.Component {
       })
   }
 
-  selectMode(mode) {
-    this.setState({ mode })
+  async uploadImage(e) {
+    const dataURL = await fileToDataURL(e.target.files[0])
+    return this.handleImageChange(dataURL, dataURL)
   }
 
-  selectImage(e, { photographer } = {}) {
-    const file = e.target ? e.target.files[0] : e
+  async selectImage(image) {
+    // TODO use React suspense for loading this asset
+    const { dataURL } = await this.context.downloadThumbnailImage(image)
 
-    return fileToDataURL(file).then(dataURL =>
-      this.setState({ photographer }, () => {
-        this.props.onChange({
-          backgroundImage: dataURL,
-          backgroundImageSelection: null,
-          photographer
-        })
+    this.handleImageChange(image.url, dataURL, image.photographer)
+    if (image.palette && image.palette.length && this.generateColorPalette) {
+      /*
+       * Background is first, which is either the lightest or darkest color
+       * and the rest are sorted by highest contrast w/ the background
+       */
+      const palette = image.palette.map(c => c.hex)
+      /*
+       * Contributors, please feel free to adjust this algorithm to create the most
+       * readible or aesthetically pleasing syntax highlighting.
+       */
+      this.props.updateHighlights({
+        background: palette[0],
+        text: palette[1],
+        variable: palette[2],
+        attribute: palette[3],
+        definition: palette[4],
+        keyword: palette[5],
+        property: palette[6],
+        string: palette[7],
+        number: palette[8],
+        operator: palette[9],
+        meta: palette[10],
+        tag: palette[11],
+        comment: palette[12]
       })
-    )
+    }
   }
 
   removeImage() {
@@ -172,7 +205,7 @@ export default class ImagePicker extends React.Component {
             <Input
               type="file"
               accept="image/png,image/x-png,image/jpeg,image/jpg"
-              onChange={this.selectImage}
+              onChange={this.uploadImage}
             />
           ) : (
             <form onSubmit={this.handleURLInput}>
@@ -188,6 +221,7 @@ export default class ImagePicker extends React.Component {
             Or use a random <a href="https://unsplash.com/">Unsplash</a> image:
           </span>
           <RandomImage onChange={this.selectImage} />
+          <GeneratePaletteSetting onChange={value => (this.generateColorPalette = value)} />
         </div>
         <style jsx>
           {`
@@ -251,7 +285,7 @@ export default class ImagePicker extends React.Component {
       </div>
     )
 
-    if (this.props.imageDataURL) {
+    if (this.state.dataURL) {
       content = (
         <div className="settings-container">
           <div className="image-container">
@@ -260,7 +294,7 @@ export default class ImagePicker extends React.Component {
               <button onClick={this.removeImage}>&times;</button>
             </div>
             <ReactCrop
-              src={this.props.imageDataURL}
+              src={this.state.dataURL}
               onImageLoaded={this.onImageLoaded}
               crop={this.state.crop}
               onChange={this.onCropChange}
@@ -328,4 +362,18 @@ export default class ImagePicker extends React.Component {
       </div>
     )
   }
+}
+
+function GeneratePaletteSetting({ onChange }) {
+  const [enabled, setEnabled] = useLocalStorage('CARBON_GENERATE_COLOR_PALETTE')
+  React.useEffect(() => void onChange(enabled), [enabled, onChange])
+
+  return (
+    <Toggle
+      label="Generate color palette (beta)"
+      enabled={enabled}
+      onChange={setEnabled}
+      padding="8px 0 0"
+    />
+  )
 }

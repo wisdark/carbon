@@ -1,146 +1,180 @@
 import React from 'react'
 import omitBy from 'lodash.omitby'
+import { useKeyboardListener } from 'actionsack'
 
 import ThemeSelect from './ThemeSelect'
 import FontSelect from './FontSelect'
 import Slider from './Slider'
+import Input from './Input'
 import Toggle from './Toggle'
 import Popout, { managePopout } from './Popout'
 import Button from './Button'
 import Presets from './Presets'
+import MenuButton from './MenuButton'
 import { COLORS, DEFAULT_PRESETS } from '../lib/constants'
 import { toggle, getPresets, savePresets, generateId, fileToJSON } from '../lib/util'
 import SettingsIcon from './svg/Settings'
-import * as Arrows from './svg/Arrows'
 
-const WindowSettings = React.memo(
-  ({
-    onChange,
-    windowTheme,
-    paddingHorizontal,
-    paddingVertical,
-    dropShadow,
-    dropShadowBlurRadius,
-    dropShadowOffsetY,
-    windowControls,
-    lineNumbers,
-    widthAdjustment,
-    watermark,
-    onWidthChanging,
-    onWidthChanged
-  }) => {
-    return (
-      <div className="settings-content">
-        <ThemeSelect
-          selected={windowTheme || 'none'}
-          onChange={onChange.bind(null, 'windowTheme')}
-        />
-        <div className="row">
-          <Slider
-            label="Padding (vert)"
-            value={paddingVertical}
-            maxValue={200}
-            onChange={onChange.bind(null, 'paddingVertical')}
-          />
-          <Slider
-            label="Padding (horiz)"
-            value={paddingHorizontal}
-            onChange={onChange.bind(null, 'paddingHorizontal')}
-            onMouseDown={onWidthChanging}
-            onMouseUp={onWidthChanged}
-          />
-        </div>
-        <Toggle
-          label="Drop shadow"
-          enabled={dropShadow}
-          onChange={onChange.bind(null, 'dropShadow')}
-        />
-        {dropShadow && (
-          <div className="row drop-shadow-options">
-            <Slider
-              label="(offset-y)"
-              value={dropShadowOffsetY}
-              onChange={onChange.bind(null, 'dropShadowOffsetY')}
-            />
-            <Slider
-              label="(blur-radius)"
-              value={dropShadowBlurRadius}
-              onChange={onChange.bind(null, 'dropShadowBlurRadius')}
-            />
-          </div>
-        )}
-        <Toggle
-          label="Window controls"
-          enabled={windowControls}
-          onChange={onChange.bind(null, 'windowControls')}
-        />
-        <Toggle
-          label="Line numbers"
-          enabled={lineNumbers}
-          onChange={onChange.bind(null, 'lineNumbers')}
-        />
-        <Toggle
-          label="Auto-adjust width"
-          enabled={widthAdjustment}
-          onChange={onChange.bind(null, 'widthAdjustment')}
-        />
-        <Toggle label="Watermark" enabled={watermark} onChange={onChange.bind(null, 'watermark')} />
-        <style jsx>
-          {`
-            .row {
-              display: flex;
-            }
+function KeyboardShortcut({ trigger, handle }) {
+  useKeyboardListener(trigger, handle)
+  return null
+}
 
-            .row > :global(div:first-child) {
-              border-right: 1px solid ${COLORS.SECONDARY};
-            }
-
-            .drop-shadow-options :global(.slider-bg),
-            .drop-shadow-options :global(label) {
-              opacity: 0.5;
-            }
-          `}
-        </style>
-      </div>
-    )
-  }
-)
-
-const TypeSettings = React.memo(
-  ({ onChange, onUpload, font, size, lineHeight, onWidthChanging, onWidthChanged }) => {
-    return (
-      <div className="settings-content">
-        <FontSelect
-          selected={font}
-          onUpload={onUpload}
-          onChange={onChange.bind(null, 'fontFamily')}
+function WindowSettings({
+  onChange,
+  windowTheme,
+  paddingHorizontal,
+  paddingVertical,
+  dropShadow,
+  dropShadowBlurRadius,
+  dropShadowOffsetY,
+  windowControls,
+  widthAdjustment,
+  watermark,
+  onWidthChanging,
+  onWidthChanged
+}) {
+  return (
+    <div className="settings-content">
+      <ThemeSelect selected={windowTheme || 'none'} onChange={onChange.bind(null, 'windowTheme')} />
+      <div className="row">
+        <Slider
+          label="Padding (vert)"
+          value={paddingVertical}
+          maxValue={200}
+          onChange={onChange.bind(null, 'paddingVertical')}
         />
         <Slider
-          label="Size"
-          value={size}
-          minValue={10}
-          maxValue={18}
-          step={0.5}
-          onChange={onChange.bind(null, 'fontSize')}
+          label="Padding (horiz)"
+          value={paddingHorizontal}
+          onChange={onChange.bind(null, 'paddingHorizontal')}
           onMouseDown={onWidthChanging}
           onMouseUp={onWidthChanged}
         />
-        <Slider
-          label="Line height"
-          value={lineHeight}
-          minValue={90}
-          maxValue={250}
-          unit="%"
-          onChange={onChange.bind(null, 'lineHeight')}
-        />
       </div>
-    )
-  }
-)
+      <Toggle
+        label="Drop shadow"
+        enabled={dropShadow}
+        onChange={onChange.bind(null, 'dropShadow')}
+      />
+      {dropShadow && (
+        <div className="row drop-shadow-options">
+          <Slider
+            label="(offset-y)"
+            value={dropShadowOffsetY}
+            onChange={onChange.bind(null, 'dropShadowOffsetY')}
+          />
+          <Slider
+            label="(blur-radius)"
+            value={dropShadowBlurRadius}
+            onChange={onChange.bind(null, 'dropShadowBlurRadius')}
+          />
+        </div>
+      )}
+      <Toggle
+        label="Window controls"
+        enabled={windowControls}
+        onChange={onChange.bind(null, 'windowControls')}
+      />
+      <Toggle
+        label="Auto-adjust width"
+        enabled={widthAdjustment}
+        onChange={onChange.bind(null, 'widthAdjustment')}
+      />
+      <Toggle label="Watermark" enabled={watermark} onChange={onChange.bind(null, 'watermark')} />
+      <style jsx>
+        {`
+          .row > :global(div:first-child) {
+            border-right: 1px solid ${COLORS.SECONDARY};
+          }
+
+          .drop-shadow-options :global(.slider-bg),
+          .drop-shadow-options :global(label) {
+            opacity: 0.5;
+          }
+
+          .settings-content :global(.settings-row:focus-within) {
+            outline: -webkit-focus-ring-color auto 4px;
+          }
+        `}
+      </style>
+    </div>
+  )
+}
+
+function EditorSettings({
+  onChange,
+  onUpload,
+  font,
+  size,
+  lineHeight,
+  lineNumbers,
+  firstLineNumber,
+  hiddenCharacters,
+  onWidthChanging,
+  onWidthChanged
+}) {
+  return (
+    <div className="settings-content">
+      <FontSelect
+        selected={font}
+        onUpload={onUpload}
+        onChange={onChange.bind(null, 'fontFamily')}
+      />
+      <Slider
+        label="Size"
+        value={size}
+        minValue={10}
+        maxValue={18}
+        step={0.5}
+        onChange={onChange.bind(null, 'fontSize')}
+        onMouseDown={onWidthChanging}
+        onMouseUp={onWidthChanged}
+      />
+      <Slider
+        label="Line height"
+        value={lineHeight}
+        minValue={90}
+        maxValue={250}
+        unit="%"
+        onChange={onChange.bind(null, 'lineHeight')}
+      />
+      <Toggle
+        label="Line numbers"
+        enabled={lineNumbers}
+        onChange={onChange.bind(null, 'lineNumbers')}
+      />
+      {lineNumbers && (
+        <div className="row settings-row first-line-number-row">
+          <Input
+            label="First line number"
+            type="number"
+            value={firstLineNumber}
+            min={0}
+            onChange={e => onChange('firstLineNumber', Number(e.target.value))}
+            width="50%"
+          />
+        </div>
+      )}
+      <Toggle
+        label="Hidden characters"
+        enabled={hiddenCharacters}
+        onChange={onChange.bind(null, 'hiddenCharacters')}
+      />
+      <style jsx>
+        {`
+          .first-line-number-row {
+            padding: 8px 12px 8px 8px;
+          }
+        `}
+      </style>
+    </div>
+  )
+}
 
 const resetButtonStyle = { borderTop: `1px solid ${COLORS.SECONDARY}` }
 
-const MiscSettings = React.memo(({ format, reset, applyPreset, settings }) => {
+function MiscSettings({ format, reset, applyPreset, settings }) {
   const input = React.useRef(null)
   let download
   try {
@@ -164,7 +198,6 @@ const MiscSettings = React.memo(({ format, reset, applyPreset, settings }) => {
           }}
         />
         <Button
-          width="50%"
           center
           style={{ borderRight: `1px solid ${COLORS.SECONDARY}` }}
           onClick={() => input.current.click()}
@@ -184,7 +217,6 @@ const MiscSettings = React.memo(({ format, reset, applyPreset, settings }) => {
       <style jsx>
         {`
           .row {
-            display: flex;
             flex: 1;
           }
           .settings-content {
@@ -200,45 +232,7 @@ const MiscSettings = React.memo(({ format, reset, applyPreset, settings }) => {
       </style>
     </div>
   )
-})
-
-const MenuButton = React.memo(({ name, select, selected }) => {
-  return (
-    <div className="menu-button">
-      <Button
-        padding="8px"
-        onClick={select(name)}
-        background={selected === name ? COLORS.BLACK : COLORS.DARK_GRAY}
-      >
-        {name}
-        <div className="arrow-icon">
-          <Arrows.Right />
-        </div>
-      </Button>
-      <style jsx>
-        {`
-          .menu-button {
-            display: flex;
-            height: 33px;
-            border-bottom: 1px solid ${COLORS.SECONDARY};
-            position: relative;
-            align-items: center;
-          }
-
-          .menu-button:last-child {
-            ${selected === 'Window' ? '' : 'border-bottom: none;'};
-          }
-
-          .arrow-icon {
-            position: absolute;
-            right: 14px;
-            top: 11px;
-          }
-        `}
-      </style>
-    </div>
-  )
-})
+}
 
 const settingButtonStyle = {
   width: '40px',
@@ -255,8 +249,7 @@ class Settings extends React.PureComponent {
   }
 
   settingsRef = React.createRef()
-
-  presetContentRef = React.createRef()
+  menuRef = React.createRef()
 
   componentDidMount() {
     const storedPresets = getPresets(localStorage) || []
@@ -301,11 +294,7 @@ class Settings extends React.PureComponent {
 
     this.props.applyPreset(preset)
 
-    // TODO: this is a hack to prevent the scrollLeft position from changing when preset is applied
-    const { scrollLeft: previousScrollLeft } = this.presetContentRef.current
-    this.setState({ previousSettings }, () => {
-      this.presetContentRef.current.scrollLeft = previousScrollLeft
-    })
+    this.setState({ previousSettings })
   }
 
   undoPreset = () => {
@@ -347,7 +336,7 @@ class Settings extends React.PureComponent {
     )
   }
 
-  savePresets = () => savePresets(localStorage, this.state.presets.filter(p => p.custom))
+  savePresets = () => savePresets(this.state.presets.filter(p => p.custom))
 
   renderContent = () => {
     switch (this.state.selectedMenu) {
@@ -364,14 +353,13 @@ class Settings extends React.PureComponent {
             dropShadowBlurRadius={this.props.dropShadowBlurRadius}
             dropShadowOffsetY={this.props.dropShadowOffsetY}
             windowControls={this.props.windowControls}
-            lineNumbers={this.props.lineNumbers}
             widthAdjustment={this.props.widthAdjustment}
             watermark={this.props.watermark}
           />
         )
-      case 'Type':
+      case 'Editor':
         return (
-          <TypeSettings
+          <EditorSettings
             onChange={this.handleChange}
             onUpload={this.handleFontUpload}
             onWidthChanging={this.handleWidthChanging}
@@ -379,6 +367,9 @@ class Settings extends React.PureComponent {
             font={this.props.fontFamily}
             size={this.props.fontSize}
             lineHeight={this.props.lineHeight}
+            lineNumbers={this.props.lineNumbers}
+            firstLineNumber={this.props.firstLineNumber}
+            hiddenCharacters={this.props.hiddenCharacters}
           />
         )
       case 'Misc': {
@@ -403,6 +394,15 @@ class Settings extends React.PureComponent {
 
     return (
       <div className="settings-container" ref={this.settingsRef}>
+        <KeyboardShortcut
+          trigger="⌘-/"
+          handle={() => {
+            toggleVisibility()
+            if (!isVisible) {
+              this.menuRef.current.focus()
+            }
+          }}
+        />
         <Button
           title="Settings Menu"
           border
@@ -433,12 +433,11 @@ class Settings extends React.PureComponent {
             remove={this.removePreset}
             create={this.createPreset}
             applied={!!previousSettings}
-            contentRef={this.presetContentRef}
           />
           <div className="settings-bottom">
-            <div className="settings-menu">
+            <div className="settings-menu" ref={this.menuRef} tabIndex={-1}>
               <MenuButton name="Window" select={this.selectMenu} selected={selectedMenu} />
-              <MenuButton name="Type" select={this.selectMenu} selected={selectedMenu} />
+              <MenuButton name="Editor" select={this.selectMenu} selected={selectedMenu} />
               <MenuButton name="Misc" select={this.selectMenu} selected={selectedMenu} />
             </div>
             {this.renderContent()}
@@ -460,16 +459,13 @@ class Settings extends React.PureComponent {
               flex: 0 0 96px;
               background-color: ${COLORS.DARK_GRAY};
             }
-          `}
-        </style>
-        <style jsx global>
-          {`
-            .settings-content {
+
+            .settings-bottom :global(.settings-content) {
               width: 100%;
               border-left: 2px solid ${COLORS.SECONDARY};
             }
 
-            .settings-content > div:not(:first-child) {
+            .settings-bottom :global(.settings-content > div:not(:first-child)) {
               border-top: solid 1px ${COLORS.SECONDARY};
             }
           `}

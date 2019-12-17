@@ -33,7 +33,7 @@ class ListSetting extends React.Component {
         key={item.id}
         onClick={this.select.bind(null, item.id)}
       >
-        {this.props.children(item)}
+        {this.props.children(item, this.props.selected)}
         {this.props.selected === item.id ? <Checkmark /> : null}
         <style jsx>
           {`
@@ -90,7 +90,7 @@ class ListSetting extends React.Component {
             .list {
               display: none;
               margin-top: -1px;
-              max-height: 80px;
+              max-height: 160px;
               overflow-y: scroll;
             }
             .is-visible + .list {

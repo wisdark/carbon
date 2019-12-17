@@ -1,14 +1,20 @@
 import React from 'react'
+import ReactDOM from 'react-dom'
 import dynamic from 'next/dynamic'
-import * as hljs from 'highlight.js'
+import hljs from 'highlight.js/lib/highlight'
+import javascript from 'highlight.js/lib/languages/javascript'
 import debounce from 'lodash.debounce'
 import ms from 'ms'
 import { Controlled as CodeMirror } from 'react-codemirror2'
-import SpinnerWrapper from './SpinnerWrapper'
 
+hljs.registerLanguage('javascript', javascript)
+
+import SpinnerWrapper from './SpinnerWrapper'
 import WindowControls from './WindowControls'
+
 import {
   COLORS,
+  LANGUAGES,
   LANGUAGE_MODE_HASH,
   LANGUAGE_NAME_HASH,
   LANGUAGE_MIME_HASH,
@@ -16,32 +22,25 @@ import {
   THEMES_HASH
 } from '../lib/constants'
 
+const SelectionEditor = dynamic(() => import('./SelectionEditor'), {
+  loading: () => null
+})
 const Watermark = dynamic(() => import('./svg/Watermark'), {
   loading: () => null
 })
 
 function searchLanguage(l) {
-  const config = LANGUAGE_NAME_HASH[l] || LANGUAGE_MODE_HASH[l] || LANGUAGE_MIME_HASH[l]
-
-  if (config) {
-    return config.mime || config.mode
-  }
+  return LANGUAGE_NAME_HASH[l] || LANGUAGE_MODE_HASH[l] || LANGUAGE_MIME_HASH[l]
 }
+
+function noop() {}
 
 class Carbon extends React.PureComponent {
   static defaultProps = {
-    onChange: () => {}
+    onChange: noop,
+    onGutterClick: noop
   }
-
-  componentDidUpdate(prevProps) {
-    // TODO keep opacities in state
-    if (
-      prevProps.config.theme != this.props.config.theme ||
-      prevProps.config.language != this.props.config.language
-    ) {
-      this.prevLine = null
-    }
-  }
+  state = {}
 
   handleLanguageChange = debounce(
     (newCode, language) => {
@@ -51,14 +50,14 @@ class Carbon extends React.PureComponent {
         const languageMode = searchLanguage(detectedLanguage)
 
         if (languageMode) {
-          return languageMode
+          return languageMode.mime || languageMode.mode
         }
       }
 
       const languageMode = searchLanguage(language)
 
       if (languageMode) {
-        return languageMode
+        return languageMode.mime || languageMode.mode
       }
 
       return language
@@ -76,31 +75,58 @@ class Carbon extends React.PureComponent {
     }
   }
 
-  prevLine = null
-  onGutterClick = (editor, lineNumber, gutter, e) => {
-    editor.display.view.forEach((line, i, arr) => {
-      if (i != lineNumber) {
-        if (this.prevLine == null) {
-          line.text.style.opacity = 0.5
-          line.gutter.style.opacity = 0.5
-        }
-      } else {
-        if (e.shiftKey && this.prevLine != null) {
-          for (
-            let index = Math.min(this.prevLine, i);
-            index < Math.max(this.prevLine, i) + 1;
-            index++
-          ) {
-            arr[index].text.style.opacity = arr[this.prevLine].text.style.opacity
-            arr[index].gutter.style.opacity = arr[this.prevLine].gutter.style.opacity
-          }
-        } else {
-          line.text.style.opacity = line.text.style.opacity == 1 ? 0.5 : 1
-          line.gutter.style.opacity = line.gutter.style.opacity == 1 ? 0.5 : 1
-        }
+  onSelection = (ed, data) => {
+    if (this.props.readOnly) {
+      return
+    }
+
+    const selection = data.ranges[0]
+    if (
+      selection.head.line === selection.anchor.line &&
+      selection.head.ch === selection.anchor.ch
+    ) {
+      return (this.currentSelection = null)
+    }
+    if (selection.head.line + selection.head.ch > selection.anchor.line + selection.anchor.ch) {
+      this.currentSelection = {
+        from: selection.anchor,
+        to: selection.head
       }
-    })
-    this.prevLine = lineNumber
+    } else {
+      this.currentSelection = {
+        from: selection.head,
+        to: selection.anchor
+      }
+    }
+  }
+
+  onMouseUp = () => {
+    if (this.currentSelection) {
+      this.setState({ selectionAt: this.currentSelection }, () => {
+        this.currentSelection = null
+      })
+    } else {
+      this.setState({ selectionAt: null })
+    }
+  }
+
+  onSelectionChange = changes => {
+    if (this.state.selectionAt) {
+      const css = [
+        `font-weight: ${changes.bold ? 'bold' : 'initial'}`,
+        `font-style: ${changes.italics ? 'italic' : 'initial'}`,
+        `text-decoration: ${changes.underline ? 'underline' : 'initial'}`,
+        changes.color && `color: ${changes.color} !important`,
+        ''
+      ]
+        .filter(Boolean)
+        .join('; ')
+      this.props.editorRef.current.editor.doc.markText(
+        this.state.selectionAt.from,
+        this.state.selectionAt.to,
+        { css }
+      )
+    }
   }
 
   render() {
@@ -113,18 +139,18 @@ class Carbon extends React.PureComponent {
 
     const options = {
       lineNumbers: config.lineNumbers,
+      firstLineNumber: config.firstLineNumber,
       mode: languageMode || 'plaintext',
       theme: config.theme,
       scrollBarStyle: null,
       viewportMargin: Infinity,
       lineWrapping: true,
+      smartIndent: true,
       extraKeys: {
         'Shift-Tab': 'indentLess'
       },
-      // negative values removes the cursor, undefined means default (530)
-      cursorBlinkRate: this.props.readOnly ? -1 : undefined,
-      // needs to be able to refresh every 16ms to hit 60 frames / second
-      pollInterval: 16
+      readOnly: this.props.readOnly ? 'nocursor' : false,
+      showInvisibles: config.hiddenCharacters
     }
     const backgroundImage =
       (this.props.config.backgroundImage && this.props.config.backgroundImageSelection) ||
@@ -134,6 +160,7 @@ class Carbon extends React.PureComponent {
 
     const light = themeConfig && themeConfig.light
 
+    /* eslint-disable jsx-a11y/no-static-element-interactions */
     const content = (
       <div className="container">
         {config.windowControls ? (
@@ -145,11 +172,13 @@ class Carbon extends React.PureComponent {
           />
         ) : null}
         <CodeMirror
+          ref={this.props.editorRef}
           className={`CodeMirror__container window-theme__${config.windowTheme}`}
-          onBeforeChange={this.onBeforeChange}
           value={this.props.children}
           options={options}
-          onGutterClick={this.onGutterClick}
+          onBeforeChange={this.onBeforeChange}
+          onGutterClick={this.props.onGutterClick}
+          onSelection={this.onSelection}
         />
         {config.watermark && <Watermark light={light} />}
         <div className="container-bg">
@@ -225,9 +254,7 @@ class Carbon extends React.PureComponent {
               z-index: 1;
               border-radius: 5px;
               ${config.dropShadow
-                ? `box-shadow: 0 ${config.dropShadowOffsetY} ${
-                    config.dropShadowBlurRadius
-                  } rgba(0, 0, 0, 0.55)`
+                ? `box-shadow: 0 ${config.dropShadowOffsetY} ${config.dropShadowBlurRadius} rgba(0, 0, 0, 0.55)`
                 : ''};
             }
 
@@ -272,10 +299,22 @@ class Carbon extends React.PureComponent {
 
     return (
       <div className="section">
-        <div className="export-container" ref={this.props.innerRef} id="export-container">
+        <div
+          ref={this.props.innerRef}
+          id="export-container"
+          className="export-container"
+          onMouseUp={this.onMouseUp}
+        >
           <SpinnerWrapper loading={this.props.loading}>{content}</SpinnerWrapper>
           <div className="twitter-png-fix" />
         </div>
+        {!this.props.readOnly &&
+          this.state.selectionAt &&
+          ReactDOM.createPortal(
+            <SelectionEditor onChange={this.onSelectionChange} />,
+            // TODO: don't use portal?
+            document.getElementById('style-editor-button')
+          )}
         <style jsx>
           {`
             .section,
@@ -288,7 +327,7 @@ class Carbon extends React.PureComponent {
               overflow: hidden;
             }
 
-            /* forces twitter to save images as png — https://github.com/dawnlabs/carbon/issues/86 */
+            /* forces twitter to save images as png — https://github.com/carbon-app/carbon/issues/86 */
             .twitter-png-fix {
               height: 1px;
               width: 100%;
@@ -301,4 +340,122 @@ class Carbon extends React.PureComponent {
   }
 }
 
-export default React.forwardRef((props, ref) => <Carbon {...props} innerRef={ref} />)
+let modesLoaded = false
+function useModeLoader() {
+  React.useEffect(() => {
+    if (!modesLoaded) {
+      LANGUAGES.filter(
+        language => language.mode && language.mode !== 'auto' && language.mode !== 'text'
+      ).forEach(language => {
+        language.custom
+          ? require(`../lib/custom/modes/${language.mode}`)
+          : require(`codemirror/mode/${language.mode}/${language.mode}`)
+      })
+      modesLoaded = true
+    }
+  }, [])
+}
+
+let highLightsLoaded = false
+function useHighlightLoader() {
+  React.useEffect(() => {
+    if (!highLightsLoaded) {
+      import('../lib/highlight-languages')
+        .then(res => res.default.map(config => hljs.registerLanguage(config[0], config[1])))
+        .then(() => {
+          highLightsLoaded = true
+        })
+    }
+  }, [])
+}
+
+function selectedLinesReducer(
+  { prevLine, selected },
+  { type, lineNumber, numLines, selectedLines }
+) {
+  const newState = {}
+
+  switch (type) {
+    case 'GROUP': {
+      if (prevLine) {
+        for (let i = Math.min(prevLine, lineNumber); i < Math.max(prevLine, lineNumber) + 1; i++) {
+          newState[i] = selected[prevLine]
+        }
+      }
+      break
+    }
+    case 'MULTILINE': {
+      for (let i = 0; i < selectedLines.length; i++) {
+        newState[selectedLines[i] - 1] = true
+      }
+      break
+    }
+    default: {
+      for (let i = 0; i < numLines; i++) {
+        if (i != lineNumber) {
+          if (prevLine == null) {
+            newState[i] = false
+          }
+        } else {
+          newState[lineNumber] = selected[lineNumber] === true ? false : true
+        }
+      }
+    }
+  }
+
+  return {
+    selected: { ...selected, ...newState },
+    prevLine: lineNumber
+  }
+}
+
+function useSelectedLines(props, editorRef) {
+  const [state, dispatch] = React.useReducer(selectedLinesReducer, {
+    prevLine: null,
+    selected: {}
+  })
+
+  React.useEffect(() => {
+    if (editorRef.current && Object.keys(state.selected).length > 0) {
+      editorRef.current.editor.display.view.forEach((line, i) => {
+        if (line.text) {
+          line.text.style.opacity = state.selected[i] === true ? 1 : 0.5
+        }
+        if (line.gutter) {
+          line.gutter.style.opacity = state.selected[i] === true ? 1 : 0.5
+        }
+      })
+    }
+  }, [state.selected, props.children, props.config, editorRef])
+
+  React.useEffect(() => {
+    if (props.config.selectedLines) {
+      dispatch({
+        type: 'MULTILINE',
+        selectedLines: props.config.selectedLines
+      })
+    }
+  }, [props.config.selectedLines])
+
+  return React.useCallback(function onGutterClick(editor, lineNumber, gutter, e) {
+    const numLines = editor.display.view.length
+    const type = e.shiftKey ? 'GROUP' : 'LINE'
+    dispatch({ type, lineNumber, numLines })
+  }, [])
+}
+
+function useShowInvisiblesLoader() {
+  React.useEffect(() => void require('cm-show-invisibles'), [])
+}
+
+function CarbonContainer(props, ref) {
+  useModeLoader()
+  useHighlightLoader()
+  useShowInvisiblesLoader()
+  const editorRef = React.createRef()
+  const onGutterClick = useSelectedLines(props, editorRef)
+
+  return <Carbon {...props} innerRef={ref} editorRef={editorRef} onGutterClick={onGutterClick} />
+}
+
+export default React.forwardRef(CarbonContainer)
