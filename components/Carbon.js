@@ -113,19 +113,22 @@ class Carbon extends React.PureComponent {
   onSelectionChange = changes => {
     if (this.state.selectionAt) {
       const css = [
-        `font-weight: ${changes.bold ? 'bold' : 'initial'}`,
-        `font-style: ${changes.italics ? 'italic' : 'initial'}`,
-        `text-decoration: ${changes.underline ? 'underline' : 'initial'}`,
-        changes.color && `color: ${changes.color} !important`,
-        ''
+        changes.bold != null && `font-weight: ${changes.bold ? 'bold' : 'initial'}`,
+        changes.italics != null && `font-style: ${changes.italics ? 'italic' : 'initial'}`,
+        changes.underline != null &&
+          `text-decoration: ${changes.underline ? 'underline' : 'initial'}`,
+        changes.color != null && `color: ${changes.color} !important`
       ]
         .filter(Boolean)
         .join('; ')
-      this.props.editorRef.current.editor.doc.markText(
-        this.state.selectionAt.from,
-        this.state.selectionAt.to,
-        { css }
-      )
+
+      if (css) {
+        this.props.editorRef.current.editor.doc.markText(
+          this.state.selectionAt.from,
+          this.state.selectionAt.to,
+          { css }
+        )
+      }
     }
   }
 
@@ -291,6 +294,13 @@ class Carbon extends React.PureComponent {
 
             .container :global(.CodeMirror-linenumber) {
               cursor: pointer;
+            }
+
+            @media (max-width: 768px) {
+              /* show cursor on mobile */
+              .container :global([contenteditable='true']) {
+                user-select: text;
+              }
             }
           `}
         </style>

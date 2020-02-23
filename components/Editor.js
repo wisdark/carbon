@@ -42,6 +42,7 @@ const SnippetToolbar = dynamic(() => import('./SnippetToolbar'), {
 })
 
 const getConfig = omit(['code'])
+const unsplashPhotographerCredit = /\n\n\/\/ Photo by.+?on Unsplash/
 
 class Editor extends React.Component {
   static contextType = ApiContext
@@ -55,6 +56,7 @@ class Editor extends React.Component {
     }
 
     this.exportImage = this.exportImage.bind(this)
+    this.copyImage = this.copyImage.bind(this)
     this.upload = this.upload.bind(this)
     this.updateSetting = this.updateSetting.bind(this)
     this.updateLanguage = this.updateLanguage.bind(this)
@@ -181,7 +183,8 @@ class Editor extends React.Component {
     // current font-family used
     const fontFamily = this.state.fontFamily
     try {
-      if (type === 'blob') {
+      // TODO consolidate type/format to only use one param
+      if (type === 'objectURL') {
         if (format === 'svg') {
           return (
             domtoimage
@@ -209,6 +212,10 @@ class Editor extends React.Component {
         return await domtoimage.toBlob(node, config).then(blob => window.URL.createObjectURL(blob))
       }
 
+      if (type === 'blob') {
+        return await domtoimage.toBlob(node, config)
+      }
+
       // Twitter needs regular dataurls
       return await domtoimage.toPng(node, config)
     } finally {
@@ -218,7 +225,7 @@ class Editor extends React.Component {
 
   updateSetting(key, value) {
     this.updateState({ [key]: value })
-    if (Object.prototype.hasOwnProperty.call(DEFAULT_SETTINGS, key) && key !== 'preset') {
+    if (Object.prototype.hasOwnProperty.call(DEFAULT_SETTINGS, key)) {
       this.updateState({ preset: null })
     }
   }
@@ -228,7 +235,7 @@ class Editor extends React.Component {
 
     const prefix = options.filename || 'carbon'
 
-    return this.getCarbonImage({ format, type: 'blob' }).then(url => {
+    return this.getCarbonImage({ format, type: 'objectURL' }).then(url => {
       if (format !== 'open') {
         link.download = `${prefix}.${format}`
       }
@@ -240,6 +247,16 @@ class Editor extends React.Component {
       link.click()
       link.remove()
     })
+  }
+
+  copyImage() {
+    return this.getCarbonImage({ format: 'png', type: 'blob' }).then(blob =>
+      navigator.clipboard.write([
+        new window.ClipboardItem({
+          'image/png': blob
+        })
+      ])
+    )
   }
 
   resetDefaultSettings() {
@@ -276,7 +293,9 @@ class Editor extends React.Component {
     if (photographer) {
       this.updateState(({ code = DEFAULT_CODE }) => ({
         ...changes,
-        code: code + `\n\n// Photo by ${photographer.name} on Unsplash`,
+        code:
+          code.replace(unsplashPhotographerCredit, '') +
+          `\n\n// Photo by ${photographer.name} on Unsplash`,
         preset: null
       }))
     } else {
@@ -398,6 +417,7 @@ class Editor extends React.Component {
               <ExportMenu
                 onChange={this.updateSetting}
                 exportImage={this.exportImage}
+                copyImage={this.copyImage}
                 exportSize={exportSize}
                 backgroundImage={backgroundImage}
               />
@@ -449,10 +469,15 @@ class Editor extends React.Component {
             .toolbar-second-row {
               height: 40px;
               display: flex;
-              flex: 1;
+              flex: 1 1 auto;
             }
             .toolbar-second-row > :global(div:not(:last-of-type)) {
               margin-right: 0.5rem;
+            }
+
+            #style-editor-button {
+              display: flex;
+              align-items: center;
             }
           `}
         </style>

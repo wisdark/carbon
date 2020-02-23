@@ -618,10 +618,38 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "aquaductape",
+      "name": "Caleb Taylor",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/29286430?v=4",
+      "profile": "https://github.com/aquaductape",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "rjmunhoz",
+      "name": "Rogério Munhoz",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/3948961?v=4",
+      "profile": "http://about.rmunhoz.me",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "technoknol",
+      "name": "Technoknol",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/6429418?v=4",
+      "profile": "https://github.com/technoknol",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "repoType": "github",
   "repoHost": "https://github.com",
   "contributorsPerLine": 7,
-  "commitConvention": "none"
+  "commitConvention": "none",
+  "skipCi": true
 }
