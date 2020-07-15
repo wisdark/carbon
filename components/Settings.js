@@ -11,7 +11,7 @@ import Popout, { managePopout } from './Popout'
 import Button from './Button'
 import Presets from './Presets'
 import MenuButton from './MenuButton'
-import { COLORS, DEFAULT_PRESETS } from '../lib/constants'
+import { COLORS, DEFAULT_PRESETS, DEFAULT_SETTINGS, DEFAULT_WIDTHS } from '../lib/constants'
 import { toggle, getPresets, savePresets, generateId, fileToJSON } from '../lib/util'
 import SettingsIcon from './svg/Settings'
 
@@ -30,13 +30,18 @@ function WindowSettings({
   dropShadowOffsetY,
   windowControls,
   widthAdjustment,
+  width,
   watermark,
   onWidthChanging,
-  onWidthChanged
+  onWidthChanged,
 }) {
   return (
     <div className="settings-content">
-      <ThemeSelect selected={windowTheme || 'none'} onChange={onChange.bind(null, 'windowTheme')} />
+      <ThemeSelect
+        selected={windowTheme || 'none'}
+        windowControls={windowControls}
+        onChange={onChange}
+      />
       <div className="row">
         <Slider
           label="Padding (vert)"
@@ -72,18 +77,31 @@ function WindowSettings({
         </div>
       )}
       <Toggle
-        label="Window controls"
-        enabled={windowControls}
-        onChange={onChange.bind(null, 'windowControls')}
-      />
-      <Toggle
         label="Auto-adjust width"
         enabled={widthAdjustment}
         onChange={onChange.bind(null, 'widthAdjustment')}
       />
+      {!widthAdjustment && (
+        <div className="row settings-row width-row">
+          <Input
+            label="Width"
+            type="number"
+            value={width}
+            min={DEFAULT_WIDTHS.minWidth}
+            max={DEFAULT_WIDTHS.maxWidth}
+            onChange={e => onChange('width', e.target.value)}
+            width="50%"
+          />
+        </div>
+      )}
       <Toggle label="Watermark" enabled={watermark} onChange={onChange.bind(null, 'watermark')} />
       <style jsx>
         {`
+          .width-row {
+            justify-content: space-between;
+            padding: 8px 12px 8px 8px;
+          }
+
           .row > :global(div:first-child) {
             border-right: 1px solid ${COLORS.SECONDARY};
           }
@@ -112,7 +130,7 @@ function EditorSettings({
   firstLineNumber,
   hiddenCharacters,
   onWidthChanging,
-  onWidthChanged
+  onWidthChanged,
 }) {
   return (
     <div className="settings-content">
@@ -236,7 +254,7 @@ function MiscSettings({ format, reset, applyPreset, settings }) {
 
 const settingButtonStyle = {
   width: '40px',
-  height: '100%'
+  height: '100%',
 }
 
 class Settings extends React.PureComponent {
@@ -245,7 +263,7 @@ class Settings extends React.PureComponent {
     selectedMenu: 'Window',
     showPresets: true,
     previousSettings: null,
-    widthChanging: false
+    widthChanging: false,
   }
 
   settingsRef = React.createRef()
@@ -254,7 +272,7 @@ class Settings extends React.PureComponent {
   componentDidMount() {
     const storedPresets = getPresets(localStorage) || []
     this.setState(({ presets }) => ({
-      presets: [...storedPresets, ...presets]
+      presets: [...storedPresets, ...presets],
     }))
   }
 
@@ -275,6 +293,13 @@ class Settings extends React.PureComponent {
     this.setState({ previousSettings: null })
   }
 
+  handleOpenAndFocus = () => {
+    this.props.toggleVisibility()
+    if (!this.props.isVisible) {
+      this.menuRef.current.focus()
+    }
+  }
+
   handleReset = () => {
     this.props.resetDefaultSettings()
     this.setState({ previousSettings: null })
@@ -287,7 +312,7 @@ class Settings extends React.PureComponent {
   }
 
   getSettingsFromProps = () =>
-    omitBy(this.props, (v, k) => typeof v === 'function' || k === 'preset')
+    omitBy(this.props, (v, k) => !Object.prototype.hasOwnProperty.call(DEFAULT_SETTINGS, k))
 
   applyPreset = preset => {
     const previousSettings = this.getSettingsFromProps()
@@ -322,7 +347,7 @@ class Settings extends React.PureComponent {
     newPreset.icon = await this.props.getCarbonImage({
       format: 'png',
       squared: true,
-      exportSize: 1
+      exportSize: 1,
     })
 
     this.props.onChange('preset', newPreset.id)
@@ -330,7 +355,7 @@ class Settings extends React.PureComponent {
     this.setState(
       ({ presets }) => ({
         previousSettings: null,
-        presets: [newPreset, ...presets]
+        presets: [newPreset, ...presets],
       }),
       this.savePresets
     )
@@ -354,6 +379,7 @@ class Settings extends React.PureComponent {
             dropShadowOffsetY={this.props.dropShadowOffsetY}
             windowControls={this.props.windowControls}
             widthAdjustment={this.props.widthAdjustment}
+            width={this.props.width}
             watermark={this.props.watermark}
           />
         )
@@ -394,15 +420,8 @@ class Settings extends React.PureComponent {
 
     return (
       <div className="settings-container" ref={this.settingsRef}>
-        <KeyboardShortcut
-          trigger="⌘-/"
-          handle={() => {
-            toggleVisibility()
-            if (!isVisible) {
-              this.menuRef.current.focus()
-            }
-          }}
-        />
+        <KeyboardShortcut trigger="⌘-/" handle={this.handleOpenAndFocus} />
+        <KeyboardShortcut trigger="⇧-⌘-\" handle={this.handleReset} />
         <Button
           title="Settings Menu"
           border
@@ -420,7 +439,7 @@ class Settings extends React.PureComponent {
             position: widthChanging ? 'fixed' : 'absolute',
             width: '316px',
             top: widthChanging ? this.settingPosition.top : 'initial',
-            left: widthChanging ? this.settingPosition.left : 'initial'
+            left: widthChanging ? this.settingPosition.left : 'initial',
           }}
         >
           <Presets

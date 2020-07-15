@@ -1,6 +1,12 @@
 import React from 'react'
 import Link from 'next/link'
+import dynamic from 'next/dynamic'
+
 import { COLORS } from '../lib/constants'
+
+const EmailSubscribe = dynamic(() => import('./EmailSubscribe'), {
+  loading: () => null,
+})
 
 const Footer = () => (
   <footer role="contentinfo" className="mt3">
@@ -22,10 +28,11 @@ const Footer = () => (
       <a className="link" href="/privacy">
         privacy
       </a>
+      <EmailSubscribe />
       <a className="link" href="/offsets">
         offsets
       </a>
-      <span className="new">New</span>
+      {/* <span className="new">New</span> */}
     </nav>
 
     <div className="mt2 mb2">

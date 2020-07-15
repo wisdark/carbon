@@ -43,24 +43,11 @@ const INITIAL_STATE = {
   imageAspectRatio: null,
   pixelCrop: null,
   photographer: null,
-  dataURL: null
+  dataURL: null,
 }
 
 export default class ImagePicker extends React.Component {
   static contextType = ApiContext
-  constructor(props) {
-    super(props)
-    this.state = INITIAL_STATE
-    this.selectMode = this.selectMode.bind(this)
-    this.handleURLInput = this.handleURLInput.bind(this)
-    this.uploadImage = this.uploadImage.bind(this)
-    this.selectImage = this.selectImage.bind(this)
-    this.removeImage = this.removeImage.bind(this)
-    this.onImageLoaded = this.onImageLoaded.bind(this)
-    this.onCropChange = this.onCropChange.bind(this)
-    this.onDragEnd = this.onDragEnd.bind(this)
-  }
-
   static getDerivedStateFromProps(nextProps, state) {
     if (state.crop) {
       // update crop for editor container aspect-ratio change
@@ -68,45 +55,45 @@ export default class ImagePicker extends React.Component {
         crop: makeAspectCrop(
           {
             ...state.crop,
-            aspect: nextProps.aspectRatio
+            aspect: nextProps.aspectRatio,
           },
           state.imageAspectRatio
-        )
+        ),
       }
     }
     return null
   }
 
-  selectMode(mode) {
-    this.setState({ mode })
-  }
+  state = INITIAL_STATE
 
-  async onDragEnd() {
+  selectMode = mode => this.setState({ mode })
+
+  onDragEnd = async () => {
     if (this.state.pixelCrop) {
       const croppedImg = await getCroppedImg(this.state.dataURL, this.state.pixelCrop)
       this.props.onChange({ backgroundImageSelection: croppedImg })
     }
   }
 
-  onCropChange(crop, pixelCrop) {
+  onCropChange = (crop, pixelCrop) => {
     this.setState({
       crop: { ...crop, aspect: this.props.aspectRatio },
-      pixelCrop
+      pixelCrop,
     })
   }
 
-  onImageLoaded(image) {
+  onImageLoaded = image => {
     const imageAspectRatio = image.width / image.height
     const initialCrop = {
       x: 0,
       y: 0,
       width: 100,
-      aspect: this.props.aspectRatio
+      aspect: this.props.aspectRatio,
     }
 
     this.setState({
       imageAspectRatio,
-      crop: makeAspectCrop(initialCrop, imageAspectRatio)
+      crop: makeAspectCrop(initialCrop, imageAspectRatio),
     })
   }
 
@@ -115,12 +102,12 @@ export default class ImagePicker extends React.Component {
       this.props.onChange({
         backgroundImage: url,
         backgroundImageSelection: null,
-        photographer
+        photographer,
       })
     })
   }
 
-  handleURLInput(e) {
+  handleURLInput = e => {
     e.preventDefault()
     const url = e.target[0].value
     return this.context
@@ -131,18 +118,18 @@ export default class ImagePicker extends React.Component {
         if (err.message.indexOf('Network Error') > -1) {
           this.setState({
             error:
-              'Fetching the image failed. This is probably a CORS-related issue. You can either enable CORS in your browser, or use another image.'
+              'Fetching the image failed. This is probably a CORS-related issue. You can either enable CORS in your browser, or use another image.',
           })
         }
       })
   }
 
-  async uploadImage(e) {
+  uploadImage = async e => {
     const dataURL = await fileToDataURL(e.target.files[0])
     return this.handleImageChange(dataURL, dataURL)
   }
 
-  async selectImage(image) {
+  selectImage = async image => {
     // TODO use React suspense for loading this asset
     const { dataURL } = await this.context.downloadThumbnailImage(image)
 
@@ -170,16 +157,16 @@ export default class ImagePicker extends React.Component {
         operator: palette[9],
         meta: palette[10],
         tag: palette[11],
-        comment: palette[12]
+        comment: palette[12],
       })
     }
   }
 
-  removeImage() {
+  removeImage = () => {
     this.setState(INITIAL_STATE, () => {
       this.props.onChange({
         backgroundImage: null,
-        backgroundImageSelection: null
+        backgroundImageSelection: null,
       })
     })
   }
@@ -209,7 +196,7 @@ export default class ImagePicker extends React.Component {
             />
           ) : (
             <form onSubmit={this.handleURLInput}>
-              <Input type="text" title="Background Image" placeholder="Image URL..." align="left" />
+              <Input type="text" title="Background Image" placeholder="Image URL…" align="left" />
               <button type="submit">Upload</button>
             </form>
           )}

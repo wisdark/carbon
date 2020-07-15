@@ -2,7 +2,7 @@ import React from 'react'
 import { useCopyTextHandler } from 'actionsack'
 
 import { COLORS } from '../lib/constants'
-import { Controls, ControlsBW } from './svg/Controls'
+import { Controls, ControlsBW, ControlsBoxy } from './svg/Controls'
 import CopySVG from './svg/Copy'
 import CheckMark from './svg/Checkmark'
 
@@ -36,9 +36,10 @@ const CopyButton = React.memo(function CopyButton({ text }) {
   )
 })
 
+const WINDOW_THEMES_MAP = { bw: <ControlsBW />, boxy: <ControlsBoxy /> }
 export default ({ theme, copyable, code, light }) => (
   <div className="window-controls">
-    {theme === 'bw' ? <ControlsBW /> : <Controls />}
+    {WINDOW_THEMES_MAP[theme] || <Controls />}
     <div className="window-title-container">
       <input aria-label="Image Title" type="text" spellCheck="false" />
     </div>
@@ -54,7 +55,9 @@ export default ({ theme, copyable, code, light }) => (
           position: relative;
           top: ${theme === 'bw' ? 36 : 34}px;
           margin-left: ${theme === 'bw' ? 16 : 14}px;
+          margin-right: ${theme === 'boxy' ? 16 : 0}px;
           z-index: 2;
+          text-align: ${theme === 'boxy' ? 'right' : 'initial'};
         }
 
         .window-title-container {
@@ -72,6 +75,11 @@ export default ({ theme, copyable, code, light }) => (
           outline: none;
           border: none;
           text-align: center;
+          /**
+           * 140px is an arbitrary value, but it's roughly equal to:
+           * 2 * (window theme width + window theme outside margin)
+           */
+          max-width: calc(100% - 140px);
           font-size: 14px;
           color: ${light ? COLORS.BLACK : COLORS.SECONDARY};
         }

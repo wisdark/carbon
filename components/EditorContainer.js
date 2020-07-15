@@ -1,5 +1,6 @@
 // Theirs
 import React from 'react'
+import Router from 'next/router'
 import { useAsyncCallback } from 'actionsack'
 
 import Editor from './Editor'
@@ -13,6 +14,7 @@ import { getThemes, saveThemes, clearSettings, saveSettings } from '../lib/util'
 
 function onReset() {
   clearSettings()
+  updateRouteState(Router, {})
 
   if (window.navigator && navigator.serviceWorker) {
     navigator.serviceWorker.getRegistrations().then(registrations => {
@@ -84,7 +86,7 @@ function EditorContainer(props) {
             setSnippet(newSnippet)
             setToasts({
               type: 'ADD',
-              toast: { children: 'Snippet saved!', closable: true }
+              toast: { children: 'Snippet saved!', closable: true },
             })
           }
         })
@@ -92,7 +94,7 @@ function EditorContainer(props) {
         update(snippetId, updates).then(() => {
           setToasts({
             type: 'ADD',
-            toast: { children: 'Snippet saved!', closable: true }
+            toast: { children: 'Snippet saved!', closable: true },
           })
         })
       }

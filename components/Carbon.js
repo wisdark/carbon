@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import dynamic from 'next/dynamic'
-import hljs from 'highlight.js/lib/highlight'
+import hljs from 'highlight.js/lib/core'
 import javascript from 'highlight.js/lib/languages/javascript'
 import debounce from 'lodash.debounce'
 import ms from 'ms'
@@ -11,6 +11,7 @@ hljs.registerLanguage('javascript', javascript)
 
 import SpinnerWrapper from './SpinnerWrapper'
 import WindowControls from './WindowControls'
+import WidthHandler from './WidthHandler'
 
 import {
   COLORS,
@@ -19,14 +20,14 @@ import {
   LANGUAGE_NAME_HASH,
   LANGUAGE_MIME_HASH,
   DEFAULT_SETTINGS,
-  THEMES_HASH
+  THEMES_HASH,
 } from '../lib/constants'
 
 const SelectionEditor = dynamic(() => import('./SelectionEditor'), {
-  loading: () => null
+  loading: () => null,
 })
 const Watermark = dynamic(() => import('./svg/Watermark'), {
-  loading: () => null
+  loading: () => null,
 })
 
 function searchLanguage(l) {
@@ -34,11 +35,24 @@ function searchLanguage(l) {
 }
 
 function noop() {}
+function getUnderline(underline) {
+  switch (underline) {
+    case 1:
+      return 'underline'
+    case 2:
+      /**
+       * Chrome will only round to the nearest wave, causing visual inconsistencies
+       * https://stackoverflow.com/questions/57559588/how-to-make-the-wavy-underline-extend-cover-all-the-characters-in-chrome
+       */
+      return `${COLORS.RED} wavy underline; text-decoration-skip-ink: none`
+  }
+  return 'initial'
+}
 
 class Carbon extends React.PureComponent {
   static defaultProps = {
     onChange: noop,
-    onGutterClick: noop
+    onGutterClick: noop,
   }
   state = {}
 
@@ -65,7 +79,7 @@ class Carbon extends React.PureComponent {
     ms('300ms'),
     {
       leading: true,
-      trailing: true
+      trailing: true,
     }
   )
 
@@ -90,12 +104,12 @@ class Carbon extends React.PureComponent {
     if (selection.head.line + selection.head.ch > selection.anchor.line + selection.anchor.ch) {
       this.currentSelection = {
         from: selection.anchor,
-        to: selection.head
+        to: selection.head,
       }
     } else {
       this.currentSelection = {
         from: selection.head,
-        to: selection.anchor
+        to: selection.anchor,
       }
     }
   }
@@ -115,9 +129,8 @@ class Carbon extends React.PureComponent {
       const css = [
         changes.bold != null && `font-weight: ${changes.bold ? 'bold' : 'initial'}`,
         changes.italics != null && `font-style: ${changes.italics ? 'italic' : 'initial'}`,
-        changes.underline != null &&
-          `text-decoration: ${changes.underline ? 'underline' : 'initial'}`,
-        changes.color != null && `color: ${changes.color} !important`
+        changes.underline != null && `text-decoration: ${getUnderline(changes.underline)}`,
+        changes.color != null && `color: ${changes.color} !important`,
       ]
         .filter(Boolean)
         .join('; ')
@@ -150,10 +163,10 @@ class Carbon extends React.PureComponent {
       lineWrapping: true,
       smartIndent: true,
       extraKeys: {
-        'Shift-Tab': 'indentLess'
+        'Shift-Tab': 'indentLess',
       },
-      readOnly: this.props.readOnly ? 'nocursor' : false,
-      showInvisibles: config.hiddenCharacters
+      readOnly: this.props.readOnly,
+      showInvisibles: config.hiddenCharacters,
     }
     const backgroundImage =
       (this.props.config.backgroundImage && this.props.config.backgroundImageSelection) ||
@@ -189,12 +202,19 @@ class Carbon extends React.PureComponent {
           <div className="alpha eliminateOnRender" />
           <div className="bg" />
         </div>
+
+        <WidthHandler
+          innerRef={this.props.innerRef}
+          onChange={this.props.updateWidth}
+          paddingHorizontal={config.paddingHorizontal}
+        />
         <style jsx>
           {`
             .container {
               position: relative;
-              min-width: ${config.widthAdjustment ? '90px' : '680px'};
-              max-width: 1024px;
+              min-width: ${config.widthAdjustment ? '90px' : 'auto'};
+              max-width: ${config.widthAdjustment ? '1024px' : 'none'};
+              ${config.widthAdjustment ? '' : `width: ${config.width}px;`}
               padding: ${config.paddingVertical} ${config.paddingHorizontal};
             }
 
@@ -224,13 +244,16 @@ class Carbon extends React.PureComponent {
             }
 
             .container .bg {
-              ${this.props.config.backgroundMode === 'image'
-                ? `background: url(${backgroundImage});
+              ${
+                this.props.config.backgroundMode === 'image'
+                  ? `background: url(${backgroundImage});
                     background-size: cover;
                     background-repeat: no-repeat;`
-                : `background: ${this.props.config.backgroundColor || config.backgroundColor};
+                  : `background: ${this.props.config.backgroundColor || config.backgroundColor};
                     background-size: auto;
-                    background-repeat: repeat;`} position: absolute;
+                    background-repeat: repeat;`
+              }
+              position: absolute;
               top: 0px;
               right: 0px;
               bottom: 0px;
@@ -256,9 +279,11 @@ class Carbon extends React.PureComponent {
               position: relative;
               z-index: 1;
               border-radius: 5px;
-              ${config.dropShadow
-                ? `box-shadow: 0 ${config.dropShadowOffsetY} ${config.dropShadowBlurRadius} rgba(0, 0, 0, 0.55)`
-                : ''};
+              ${
+                config.dropShadow
+                  ? `box-shadow: 0 ${config.dropShadowOffsetY} ${config.dropShadowBlurRadius} rgba(0, 0, 0, 0.55)`
+                  : ''
+              };
             }
 
             .container :global(.CodeMirror__container .CodeMirror) {
@@ -296,6 +321,10 @@ class Carbon extends React.PureComponent {
               cursor: pointer;
             }
 
+            .container :global(.CodeMirror-cursor) {
+              visibility: ${this.props.readOnly ? 'hidden' : ''};
+            }
+
             @media (max-width: 768px) {
               /* show cursor on mobile */
               .container :global([contenteditable='true']) {
@@ -306,6 +335,11 @@ class Carbon extends React.PureComponent {
         </style>
       </div>
     )
+
+    const selectionNode =
+      !this.props.readOnly &&
+      !!this.state.selectionAt &&
+      document.getElementById('style-editor-button')
 
     return (
       <div className="section">
@@ -318,12 +352,11 @@ class Carbon extends React.PureComponent {
           <SpinnerWrapper loading={this.props.loading}>{content}</SpinnerWrapper>
           <div className="twitter-png-fix" />
         </div>
-        {!this.props.readOnly &&
-          this.state.selectionAt &&
+        {selectionNode &&
           ReactDOM.createPortal(
             <SelectionEditor onChange={this.onSelectionChange} />,
             // TODO: don't use portal?
-            document.getElementById('style-editor-button')
+            selectionNode
           )}
         <style jsx>
           {`
@@ -339,7 +372,11 @@ class Carbon extends React.PureComponent {
 
             /* forces twitter to save images as png — https://github.com/carbon-app/carbon/issues/86 */
             .twitter-png-fix {
-              height: 1px;
+              /* TODO, remove?
+               * Twitter is currently converting everything to JPEGs anyways. Removing this
+               * would simplify the width/height calculations, as well as the includeTransparentRow option
+               */
+              height: 0px;
               width: 100%;
               background: rgba(0, 0, 0, 0.01);
             }
@@ -415,14 +452,14 @@ function selectedLinesReducer(
 
   return {
     selected: { ...selected, ...newState },
-    prevLine: lineNumber
+    prevLine: lineNumber,
   }
 }
 
 function useSelectedLines(props, editorRef) {
   const [state, dispatch] = React.useReducer(selectedLinesReducer, {
     prevLine: null,
-    selected: {}
+    selected: {},
   })
 
   React.useEffect(() => {
@@ -442,7 +479,7 @@ function useSelectedLines(props, editorRef) {
     if (props.config.selectedLines) {
       dispatch({
         type: 'MULTILINE',
-        selectedLines: props.config.selectedLines
+        selectedLines: props.config.selectedLines,
       })
     }
   }, [props.config.selectedLines])
