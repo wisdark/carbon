@@ -5,7 +5,7 @@ import { withRouter } from 'next/router'
 
 // Ours
 import ApiContext from '../../components/ApiContext'
-import { StylesheetLink, CodeMirrorLink, MetaTags } from '../../components/Meta'
+import { StylesheetLink, CodeMirrorLink, MetaTags, HIGHLIGHTS_ONLY } from '../../components/Meta'
 import Font from '../../components/style/Font'
 import Carbon from '../../components/Carbon'
 import GlobalHighlights from '../../components/Themes/GlobalHighlights'
@@ -22,7 +22,7 @@ const Page = props => (
     <CodeMirrorLink />
     <Font />
     {props.children}
-    {props.theme === 'a11y-dark' && (
+    {HIGHLIGHTS_ONLY.includes(props.theme) && (
       <GlobalHighlights highlights={THEMES_HASH[props.theme].highlights} />
     )}
     <style jsx global>
@@ -46,7 +46,6 @@ class Embed extends React.Component {
     code: DEFAULT_CODE,
     mounted: false,
     readOnly: true,
-    key: 0,
   }
 
   snippet = {}
@@ -113,8 +112,7 @@ class Embed extends React.Component {
         </div>
         <style jsx global>
           {`
-            .eliminateOnRender,
-            .twitter-png-fix {
+            .eliminateOnRender {
               display: none;
             }
           `}

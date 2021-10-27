@@ -154,11 +154,12 @@ class Carbon extends React.PureComponent {
     )
 
     const options = {
+      screenReaderLabel: 'Code editor',
       lineNumbers: config.lineNumbers,
       firstLineNumber: config.firstLineNumber,
       mode: languageMode || 'plaintext',
       theme: config.theme,
-      scrollBarStyle: null,
+      scrollbarStyle: null,
       viewportMargin: Infinity,
       lineWrapping: true,
       smartIndent: true,
@@ -167,6 +168,7 @@ class Carbon extends React.PureComponent {
       },
       readOnly: this.props.readOnly,
       showInvisibles: config.hiddenCharacters,
+      autoCloseBrackets: true,
     }
     const backgroundImage =
       (this.props.config.backgroundImage && this.props.config.backgroundImageSelection) ||
@@ -244,15 +246,13 @@ class Carbon extends React.PureComponent {
             }
 
             .container .bg {
-              ${
-                this.props.config.backgroundMode === 'image'
-                  ? `background: url(${backgroundImage});
+              ${this.props.config.backgroundMode === 'image'
+                ? `background: url(${backgroundImage});
                     background-size: cover;
                     background-repeat: no-repeat;`
-                  : `background: ${this.props.config.backgroundColor || config.backgroundColor};
+                : `background: ${this.props.config.backgroundColor || config.backgroundColor};
                     background-size: auto;
-                    background-repeat: repeat;`
-              }
+                    background-repeat: repeat;`}
               position: absolute;
               top: 0px;
               right: 0px;
@@ -279,11 +279,9 @@ class Carbon extends React.PureComponent {
               position: relative;
               z-index: 1;
               border-radius: 5px;
-              ${
-                config.dropShadow
-                  ? `box-shadow: 0 ${config.dropShadowOffsetY} ${config.dropShadowBlurRadius} rgba(0, 0, 0, 0.55)`
-                  : ''
-              };
+              ${config.dropShadow
+                ? `box-shadow: 0 ${config.dropShadowOffsetY} ${config.dropShadowBlurRadius} rgba(0, 0, 0, 0.55)`
+                : ''};
             }
 
             .container :global(.CodeMirror__container .CodeMirror) {
@@ -350,7 +348,6 @@ class Carbon extends React.PureComponent {
           onMouseUp={this.onMouseUp}
         >
           <SpinnerWrapper loading={this.props.loading}>{content}</SpinnerWrapper>
-          <div className="twitter-png-fix" />
         </div>
         {selectionNode &&
           ReactDOM.createPortal(
@@ -369,17 +366,6 @@ class Carbon extends React.PureComponent {
               align-items: center;
               overflow: hidden;
             }
-
-            /* forces twitter to save images as png — https://github.com/carbon-app/carbon/issues/86 */
-            .twitter-png-fix {
-              /* TODO, remove?
-               * Twitter is currently converting everything to JPEGs anyways. Removing this
-               * would simplify the width/height calculations, as well as the includeTransparentRow option
-               */
-              height: 0px;
-              width: 100%;
-              background: rgba(0, 0, 0, 0.01);
-            }
           `}
         </style>
       </div>
@@ -391,6 +377,9 @@ let modesLoaded = false
 function useModeLoader() {
   React.useEffect(() => {
     if (!modesLoaded) {
+      // Load Codemirror add-ons
+      require('../lib/custom/autoCloseBrackets')
+      // Load Codemirror modes
       LANGUAGES.filter(
         language => language.mode && language.mode !== 'auto' && language.mode !== 'text'
       ).forEach(language => {

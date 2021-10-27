@@ -1,6 +1,6 @@
 import React from 'react'
 import { useRouter } from 'next/router'
-import { useCopyTextHandler, useAsyncCallback } from 'actionsack'
+import { useCopyTextHandler, useAsyncCallback, useKeyboardListener } from 'actionsack'
 import morph from 'morphmorph'
 
 import { COLORS } from '../lib/constants'
@@ -19,7 +19,9 @@ const toIFrame = (url, width, height) =>
 `
 
 const toURL = url => `${location.origin}${url}`
-const toEncodedURL = morph.compose(encodeURI, toURL)
+// Medium does not handle asterisks correctly - https://github.com/carbon-app/carbon/issues/1067
+const replaceAsterisks = string => string.replace(/\*/g, '%2A')
+const toEncodedURL = morph.compose(encodeURI, replaceAsterisks, toURL)
 
 function CopyButton(props) {
   return (
@@ -43,7 +45,7 @@ function CopyEmbed({ mapper, title }) {
 const popoutStyle = { width: '140px', right: 0 }
 
 function useClipboardSupport() {
-  const [isClipboardSupports, setClipboardSupport] = React.useState(false)
+  const [isClipboardSupported, setClipboardSupport] = React.useState(false)
 
   React.useEffect(() => {
     setClipboardSupport(
@@ -51,7 +53,7 @@ function useClipboardSupport() {
     )
   }, [])
 
-  return isClipboardSupports
+  return isClipboardSupported
 }
 
 function CopyMenu({ isVisible, toggleVisibility, copyImage, carbonRef }) {
@@ -62,8 +64,15 @@ function CopyMenu({ isVisible, toggleVisibility, copyImage, carbonRef }) {
   )
 
   const [copy, { loading }] = useAsyncCallback(async (...args) => {
-    await copyImage(...args)
-    showCopied()
+    if (clipboardSupported) {
+      await copyImage(...args)
+      showCopied()
+    }
+  })
+
+  useKeyboardListener('⌘-⇧-c', e => {
+    e.preventDefault()
+    copy(e)
   })
 
   return (
@@ -77,6 +86,7 @@ function CopyMenu({ isVisible, toggleVisibility, copyImage, carbonRef }) {
           margin="0 8px 0 0"
           onClick={toggleVisibility}
           color={COLORS.SECONDARY}
+          title="Copy menu"
         >
           <CopySVG size={16} color={COLORS.SECONDARY} />
         </Button>

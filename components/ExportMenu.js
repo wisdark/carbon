@@ -1,5 +1,5 @@
 import React from 'react'
-import { useOnline, useKeyboardListener, useAsyncCallback } from 'actionsack'
+import { useKeyboardListener, useAsyncCallback } from 'actionsack'
 
 import { COLORS, EXPORT_SIZES } from '../lib/constants'
 import Button from './Button'
@@ -8,49 +8,19 @@ import Popout, { managePopout } from './Popout'
 
 import { Down as ArrowDown } from './svg/Arrows'
 
-const MAX_PAYLOAD_SIZE = 5e6 // bytes
-function verifyPayloadSize(str) {
-  if (typeof str !== 'string') return true
-
-  if (typeof window !== 'undefined') {
-    return new Blob([str]).size < MAX_PAYLOAD_SIZE
-  }
-
-  return Buffer.byteLength(str, 'utf8')
-}
-
 const popoutStyle = { width: '256px', right: 0 }
 
-function useSafari() {
-  const [isSafari, setSafari] = React.useState(false)
-  React.useEffect(() => {
-    setSafari(
-      window.navigator &&
-        window.navigator.userAgent.indexOf('Safari') !== -1 &&
-        window.navigator.userAgent.indexOf('Chrome') === -1
-    )
-  }, [])
-
-  return isSafari
+function preventDefault(fn) {
+  return e => {
+    e.preventDefault()
+    return fn(e)
+  }
 }
 
-function ExportMenu({
-  backgroundImage,
-  onChange,
-  exportSize,
-  isVisible,
-  toggleVisibility,
-  exportImage: exp,
-}) {
-  const tooLarge = React.useMemo(() => !verifyPayloadSize(backgroundImage), [backgroundImage])
-  const online = useOnline()
-  const isSafari = useSafari()
+function ExportMenu({ onChange, exportSize, isVisible, toggleVisibility, exportImage: exp }) {
   const input = React.useRef()
 
   const [exportImage, { loading }] = useAsyncCallback(exp)
-  useKeyboardListener('⌘-⇧-e', () => exportImage())
-
-  const disablePNG = isSafari && (tooLarge || !online)
 
   const handleExportSizeChange = selectedSize => () => onChange('exportSize', selectedSize)
 
@@ -58,6 +28,9 @@ function ExportMenu({
     exportImage(format, {
       filename: input.current && input.current.value,
     })
+
+  useKeyboardListener('⌘-⇧-e', preventDefault(handleExport('png')))
+  useKeyboardListener('⌘-⇧-s', preventDefault(handleExport('svg')))
 
   return (
     <div className="export-menu-container">
@@ -70,6 +43,7 @@ function ExportMenu({
           onClick={handleExport('png')}
           data-cy="quick-export-button"
           style={{ minWidth: 92, borderBottomRightRadius: 0, borderTopRightRadius: 0 }}
+          title="Quick export"
         >
           {loading ? 'Exporting…' : 'Export'}
         </Button>
@@ -84,6 +58,7 @@ function ExportMenu({
           data-cy="export-button"
           margin="0 0 0 -1px"
           style={{ borderBottomLeftRadius: 0, borderTopLeftRadius: 0 }}
+          title="Export menu dropdown"
         >
           <ArrowDown color={COLORS.PURPLE} />
         </Button>
@@ -122,19 +97,17 @@ function ExportMenu({
           <div className="save-container">
             <span>Download</span>
             <div>
-              {!disablePNG && (
-                <Button
-                  center
-                  margin="0 8px 0 0"
-                  hoverColor={COLORS.PURPLE}
-                  color={COLORS.DARK_PURPLE}
-                  onClick={handleExport('png')}
-                  id="export-png"
-                  disabled={loading}
-                >
-                  PNG
-                </Button>
-              )}
+              <Button
+                center
+                margin="0 8px 0 0"
+                hoverColor={COLORS.PURPLE}
+                color={COLORS.DARK_PURPLE}
+                onClick={handleExport('png')}
+                id="export-png"
+                disabled={loading}
+              >
+                PNG
+              </Button>
               <Button
                 center
                 hoverColor={COLORS.PURPLE}

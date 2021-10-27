@@ -1,7 +1,7 @@
 import React from 'react'
 
 // Feature flag
-const ACTIVE = true
+const ACTIVE = false
 
 const key = 'CARBON_CTA_4'
 
@@ -34,7 +34,7 @@ function Toast() {
   }
 
   return (
-    <div className="toast mb4">
+    <div className="toast">
       <div className="toast-content">
         <p>Black Lives Matter.</p>
         <a href="https://www.joincampaignzero.org" target="_blank" rel="noreferrer noopener">
@@ -56,16 +56,13 @@ function Toast() {
           }
 
           .toast {
+            margin: -4.6rem auto var(--x4);
             padding: 8px 16px;
             color: #fff;
             border: 1px solid #fff;
-            border-radius: 2px;
-            margin-top: calc(var(--x4) * -1);
+            border-radius: 3px;
             animation-name: slide;
             animation-duration: 600ms;
-            max-width: 100vw;
-            margin-left: auto;
-            margin-right: auto;
           }
 
           .toast-content {
@@ -92,6 +89,12 @@ function Toast() {
 
           p {
             margin: 0;
+          }
+
+          @media (max-width: 840px) {
+            .toast {
+              display: none;
+            }
           }
         `}
       </style>

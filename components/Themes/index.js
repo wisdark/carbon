@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic'
 import GlobalHighlights from './GlobalHighlights'
 import Dropdown from '../Dropdown'
 import { managePopout } from '../Popout'
+import ReferralLink from '../ReferralLink'
 import ThemeIcon from '../svg/Theme'
 import RemoveIcon from '../svg/Remove'
 import { COLORS } from '../../lib/constants'
@@ -15,6 +16,11 @@ const ThemeCreate = dynamic(() => import('./ThemeCreate'), {
 const ThemeItem = ({ children, item, isSelected, remove }) => (
   <div className="theme-item">
     {children}
+    {item.referral && (
+      <div style={{ margin: `0 ${isSelected ? 8 : 0}px 0 8px` }}>
+        <ReferralLink href={item.referral}>Purchase</ReferralLink>
+      </div>
+    )}
     {item.custom && !isSelected && (
       <div
         role="button"
@@ -25,7 +31,7 @@ const ThemeItem = ({ children, item, isSelected, remove }) => (
           remove(item.id)
         }}
       >
-        <RemoveIcon color={COLORS.SECONDARY} />
+        <RemoveIcon color={COLORS.SECONDARY} style={{ transform: 'scale(1.6)' }} />
       </div>
     )}
     <style jsx>
