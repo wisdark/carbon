@@ -7,7 +7,7 @@
     <img src="https://img.shields.io/badge/maintained%20with-Ranger-1f93f3.svg" alt="maintained with Ranger" />  
   </a>
   <a href="#contributors">
-    <img src="https://img.shields.io/badge/all_contributors-78-orange.svg" alt="All Contributors" />
+    <img src="https://img.shields.io/badge/all_contributors-160-orange.svg" alt="All Contributors" />
   </a>
   <a href="/LICENSE">
     <img src="https://img.shields.io/github/license/carbon-app/carbon.svg" alt="MIT License" />
@@ -137,7 +137,7 @@ Carbon 專案由 TA 們發起：
 
 你的公司在用 Carbon 嗎？考慮一下為此專案的新功能開發、bug 修復等提供贊助。
 
-<a href="https://fossa.com" style="margin-right: 2rem;" target="_blank"><img width="160px" src="https://assets-global.website-files.com/5f4d9ea2592c16056cb0f7a5/5f4d9ea2592c16d9a2b0f7da_logo-FOSSA-night-blue.svg" /></a>
+[![Fossa](https://assets-global.website-files.com/5f4d9ea2592c16056cb0f7a5/5f4d9ea2592c16d9a2b0f7da_logo-FOSSA-night-blue.svg)](https://fossa.com)
 <a href="https://opencollective.com/carbon-app/sponsors/0/website" target="_blank"><img src="https://opencollective.com/carbon-app/sponsors/0/avatar"></a>
 <a href="https://opencollective.com/carbon-app/sponsors/1/website" target="_blank"><img src="https://opencollective.com/carbon-app/sponsors/1/avatar"></a>
 <a href="https://opencollective.com/carbon-app/sponsors/2/website" target="_blank"><img src="https://opencollective.com/carbon-app/sponsors/2/avatar"></a>
@@ -159,7 +159,7 @@ Carbon 專案由 TA 們發起：
 
 ### 感謝
 
-[ ▲ Vercel ](https://vercel.com/) 贊助了 Carbon 的服務託管。
+[ ▲ Vercel ](https://vercel.com?utm_source=carbon-app&utm_campaign=oss) 贊助了 Carbon 的服務託管。
 
 ### 所有貢獻者
 
@@ -288,6 +288,15 @@ Carbon 專案由 TA 們發起：
   </tr>
   <tr>
     <td align="center"><a href="https://rizda.win/"><img src="https://avatars.githubusercontent.com/u/13027142?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Rizda Dwi Prasetya</b></sub></a><br /><a href="#content-rizdaprasetya" title="Content">🖋</a></td>
+    <td align="center"><a href="https://github.com/AbreuY"><img src="https://avatars.githubusercontent.com/u/5095949?v=4?s=100" width="100px;" alt=""/><br /><sub><b>AbreuY</b></sub></a><br /><a href="#translation-AbreuY" title="Translation">🌍</a></td>
+    <td align="center"><a href="https://www.rizkytegar.com/"><img src="https://avatars.githubusercontent.com/u/55475891?v=4?s=100" width="100px;" alt=""/><br /><sub><b>>_Rizky.dev</b></sub></a><br /><a href="#translation-rizkytegar" title="Translation">🌍</a> <a href="https://github.com/carbon-app/carbon/commits?author=rizkytegar" title="Documentation">📖</a></td>
+    <td align="center"><a href="https://github.com/OpeAbidemi"><img src="https://avatars.githubusercontent.com/u/58413594?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Abidemi Harry</b></sub></a><br /><a href="https://github.com/carbon-app/carbon/commits?author=OpeAbidemi" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/mcognetta"><img src="https://avatars.githubusercontent.com/u/6856636?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Marco</b></sub></a><br /><a href="#translation-mcognetta" title="Translation">🌍</a></td>
+    <td align="center"><a href="https://github.com/samrobbins85"><img src="https://avatars.githubusercontent.com/u/29740136?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Sam Robbins</b></sub></a><br /><a href="https://github.com/carbon-app/carbon/commits?author=samrobbins85" title="Documentation">📖</a></td>
+    <td align="center"><a href="https://github.com/alceil"><img src="https://avatars.githubusercontent.com/u/47685349?v=4?s=100" width="100px;" alt=""/><br /><sub><b>alceil</b></sub></a><br /><a href="https://github.com/carbon-app/carbon/commits?author=alceil" title="Code">💻</a></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/hatsu38"><img src="https://avatars.githubusercontent.com/u/16137809?v=4?s=100" width="100px;" alt=""/><br /><sub><b>hatsu</b></sub></a><br /><a href="https://github.com/carbon-app/carbon/commits?author=hatsu38" title="Code">💻</a></td>
   </tr>
 </table>
 

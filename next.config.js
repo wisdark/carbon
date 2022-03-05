@@ -5,7 +5,6 @@ const withBundleAnalyzer = bundleAnalyzer({ enabled: process.env.ANALYZE === 'tr
 
 module.exports = withBundleAnalyzer(
   withOffline({
-    target: 'serverless',
     pwa: {
       disable: process.env.NODE_ENV !== 'production',
       dest: 'public',
@@ -18,19 +17,18 @@ module.exports = withBundleAnalyzer(
         include: /node_modules\/graphql-language-service-parser/,
         use: [options.defaultLoaders.babel],
       })
-      // Enable w/ Next.js 11
-      // config.plugins.push(
-      //   new options.webpack.IgnorePlugin({
-      //     resourceRegExp: /\.html$/,
-      //     contextRegExp: /node_modules/,
-      //   })
-      // )
-      // config.plugins.push(
-      //   new options.webpack.IgnorePlugin({
-      //     resourceRegExp: /\.css$/,
-      //     contextRegExp: /node_modules\/codemirror\/mode/,
-      //   })
-      // )
+      config.plugins.push(
+        new options.webpack.IgnorePlugin({
+          resourceRegExp: /\.html$/,
+          contextRegExp: /node_modules/,
+        })
+      )
+      config.plugins.push(
+        new options.webpack.IgnorePlugin({
+          resourceRegExp: /\.css$/,
+          contextRegExp: /node_modules\/codemirror\/mode/,
+        })
+      )
 
       return config
     },
@@ -60,6 +58,9 @@ module.exports = withBundleAnalyzer(
           ],
         },
       ]
+    },
+    rewrites() {
+      return [{ source: '/api/image', destination: '/api/image/index' }]
     },
     redirects() {
       return [

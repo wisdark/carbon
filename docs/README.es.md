@@ -7,7 +7,7 @@
     <img src="https://img.shields.io/badge/maintained%20with-Ranger-1f93f3.svg" alt="maintained with Ranger" />  
   </a>
   <a href="#contributors">
-    <img src="https://img.shields.io/badge/all_contributors-78-orange.svg" alt="All Contributors" />
+    <img src="https://img.shields.io/badge/all_contributors-160-orange.svg" alt="All Contributors" />
   </a>
   <a href="/LICENSE">
     <img src="https://img.shields.io/github/license/carbon-app/carbon.svg" alt="MIT License" />
@@ -21,7 +21,7 @@
 
 ## Introducción
 
-¿Conoces [todas de](https://twitter.com/dan_abramov/status/890191815567175680) [esas](https://twitter.com/reactjs/status/890511993261654017) [capturas de pantalla](https://twitter.com/notquiteleo/status/873483329345028096) que ves en Twitter? Aunque el código es generalmente impresionante, vimos la posibilidad de mejorarlo en el departamento de estética. Carbon hace que sea fácil crear y compartir bellas imágenes de su código. ¿Entonces, qué esperas? Ve a impresionar a todos tus seguidores con tu nueva destreza de diseño.
+¿Conoces [todas](https://twitter.com/dan_abramov/status/890191815567175680) [esas](https://twitter.com/reactjs/status/890511993261654017) [capturas de pantalla](https://twitter.com/notquiteleo/status/873483329345028096) que ves en Twitter? Aunque el código es generalmente impresionante, vimos la posibilidad de mejorarlo en el departamento de estética. Carbon hace que sea fácil crear y compartir bellas imágenes de su código. ¿Entonces, qué esperas? Ve a impresionar a todos tus seguidores con tu nueva destreza de diseño.
 
 <p align="center">
   <img width="100%" alt="Carbon example" src="https://user-images.githubusercontent.com/8397708/63456416-b27d1a80-c403-11e9-9572-105b089be885.png">
@@ -83,7 +83,7 @@ Echa un vistazo a estos proyectos que nuestra increíble comunidad ha creado:
 
 - [CLI `carbon-now-cli`](https://github.com/mixn/carbon-now-cli) - Abra un archivo en Carbon o descárguelo directamente usando `carbon-now`, que presenta un modo interactivo, resaltado selectivo y más.
 - [CodeExpander](https://codeexpander.com) - Un cliente inteligente GitHub gist con las características TextExpander.
-- [`nef`](https://github.com/bow-swift/nef#-exporting-carbon-code-snippets) - Exporte múltiples fragmentos de código de carbono desde `Xcode Playground`.
+- [`nef`](https://github.com/bow-swift/nef#-exporting-carbon-code-snippets) - Exporte múltiples fragmentos de código de Carbon desde `Xcode Playground`.
 
 ##### Librerías
 
@@ -118,7 +118,7 @@ Carbon es un proyecto de:
 
 ¿Tu empresa utiliza Carbon? Considera patrocinar el proyecto para financiar nuevas características, correcciones de errores y más.
 
-<a href="https://fossa.com" style="margin-right: 2rem;" target="_blank"><img width="160px" src="https://assets-global.website-files.com/5f4d9ea2592c16056cb0f7a5/5f4d9ea2592c16d9a2b0f7da_logo-FOSSA-night-blue.svg" /></a>
+[![Fossa](https://assets-global.website-files.com/5f4d9ea2592c16056cb0f7a5/5f4d9ea2592c16d9a2b0f7da_logo-FOSSA-night-blue.svg)](https://fossa.com)
 <a href="https://opencollective.com/carbon-app/sponsors/0/website" target="_blank"><img src="https://opencollective.com/carbon-app/sponsors/0/avatar"></a>
 <a href="https://opencollective.com/carbon-app/sponsors/1/website" target="_blank"><img src="https://opencollective.com/carbon-app/sponsors/1/avatar"></a>
 <a href="https://opencollective.com/carbon-app/sponsors/2/website" target="_blank"><img src="https://opencollective.com/carbon-app/sponsors/2/avatar"></a>
@@ -140,7 +140,7 @@ Carbon es un proyecto de:
 
 ### Gracias a
 
-[ ▲ Vercel ](https://vercel.com/) por patrocinar el alojamiento de Carbon.
+[ ▲ Vercel ](https://vercel.com?utm_source=carbon-app&utm_campaign=oss) por patrocinar el alojamiento de Carbon.
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/import/git?s=https%3A%2F%2Fgithub.com%2Fcarbon-app%2Fcarbon&project-name=carbon&repo-name=carbon)
 
@@ -275,6 +275,15 @@ Gracias a todas estas personas maravillosas ([emoji key](https://github.com/kent
   </tr>
   <tr>
     <td align="center"><a href="https://rizda.win/"><img src="https://avatars.githubusercontent.com/u/13027142?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Rizda Dwi Prasetya</b></sub></a><br /><a href="#content-rizdaprasetya" title="Content">🖋</a></td>
+    <td align="center"><a href="https://github.com/AbreuY"><img src="https://avatars.githubusercontent.com/u/5095949?v=4?s=100" width="100px;" alt=""/><br /><sub><b>AbreuY</b></sub></a><br /><a href="#translation-AbreuY" title="Translation">🌍</a></td>
+    <td align="center"><a href="https://www.rizkytegar.com/"><img src="https://avatars.githubusercontent.com/u/55475891?v=4?s=100" width="100px;" alt=""/><br /><sub><b>>_Rizky.dev</b></sub></a><br /><a href="#translation-rizkytegar" title="Translation">🌍</a> <a href="https://github.com/carbon-app/carbon/commits?author=rizkytegar" title="Documentation">📖</a></td>
+    <td align="center"><a href="https://github.com/OpeAbidemi"><img src="https://avatars.githubusercontent.com/u/58413594?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Abidemi Harry</b></sub></a><br /><a href="https://github.com/carbon-app/carbon/commits?author=OpeAbidemi" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/mcognetta"><img src="https://avatars.githubusercontent.com/u/6856636?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Marco</b></sub></a><br /><a href="#translation-mcognetta" title="Translation">🌍</a></td>
+    <td align="center"><a href="https://github.com/samrobbins85"><img src="https://avatars.githubusercontent.com/u/29740136?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Sam Robbins</b></sub></a><br /><a href="https://github.com/carbon-app/carbon/commits?author=samrobbins85" title="Documentation">📖</a></td>
+    <td align="center"><a href="https://github.com/alceil"><img src="https://avatars.githubusercontent.com/u/47685349?v=4?s=100" width="100px;" alt=""/><br /><sub><b>alceil</b></sub></a><br /><a href="https://github.com/carbon-app/carbon/commits?author=alceil" title="Code">💻</a></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://github.com/hatsu38"><img src="https://avatars.githubusercontent.com/u/16137809?v=4?s=100" width="100px;" alt=""/><br /><sub><b>hatsu</b></sub></a><br /><a href="https://github.com/carbon-app/carbon/commits?author=hatsu38" title="Code">💻</a></td>
   </tr>
 </table>
 

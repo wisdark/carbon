@@ -879,6 +879,70 @@
       "contributions": [
         "content"
       ]
+    },
+    {
+      "login": "AbreuY",
+      "name": "AbreuY",
+      "avatar_url": "https://avatars.githubusercontent.com/u/5095949?v=4",
+      "profile": "https://github.com/AbreuY",
+      "contributions": [
+        "translation"
+      ]
+    },
+    {
+      "login": "rizkytegar",
+      "name": ">_Rizky.dev",
+      "avatar_url": "https://avatars.githubusercontent.com/u/55475891?v=4",
+      "profile": "https://www.rizkytegar.com/",
+      "contributions": [
+        "translation",
+        "doc"
+      ]
+    },
+    {
+      "login": "OpeAbidemi",
+      "name": "Abidemi Harry",
+      "avatar_url": "https://avatars.githubusercontent.com/u/58413594?v=4",
+      "profile": "https://github.com/OpeAbidemi",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "mcognetta",
+      "name": "Marco",
+      "avatar_url": "https://avatars.githubusercontent.com/u/6856636?v=4",
+      "profile": "https://github.com/mcognetta",
+      "contributions": [
+        "translation"
+      ]
+    },
+    {
+      "login": "samrobbins85",
+      "name": "Sam Robbins",
+      "avatar_url": "https://avatars.githubusercontent.com/u/29740136?v=4",
+      "profile": "https://github.com/samrobbins85",
+      "contributions": [
+        "doc"
+      ]
+    },
+    {
+      "login": "alceil",
+      "name": "alceil",
+      "avatar_url": "https://avatars.githubusercontent.com/u/47685349?v=4",
+      "profile": "https://github.com/alceil",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "hatsu38",
+      "name": "hatsu",
+      "avatar_url": "https://avatars.githubusercontent.com/u/16137809?v=4",
+      "profile": "https://github.com/hatsu38",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "repoType": "github",
