@@ -42,7 +42,7 @@ const SnippetToolbar = dynamic(() => import('./SnippetToolbar'), {
   loading: () => null,
 })
 
-const getConfig = omit(['code'])
+const getConfig = omit(['code', 'titleBar'])
 const unsplashPhotographerCredit = /\n\n\/\/ Photo by.+?on Unsplash/
 
 class Editor extends React.Component {
@@ -88,9 +88,12 @@ class Editor extends React.Component {
     leading: true,
   })
 
-  updateState = updates => this.setState(updates, () => this.onUpdate(this.state))
+  sync = () => this.onUpdate(this.state)
+
+  updateState = updates => this.setState(updates, this.sync)
 
   updateCode = code => this.updateState({ code })
+  updateTitleBar = titleBar => this.updateState({ titleBar })
   updateWidth = width => this.setState({ widthAdjustment: false, width })
 
   getCarbonImage = async (
@@ -105,10 +108,12 @@ class Editor extends React.Component {
     const width = node.offsetWidth * exportSize
     const height = squared ? node.offsetWidth * exportSize : node.offsetHeight * exportSize
 
+    const transformOrigin = window.navigator.userAgent.indexOf('Safari') !== -1 ? '0 50%' : 'center'
+
     const config = {
       style: {
         transform: `scale(${exportSize})`,
-        'transform-origin': 'center',
+        'transform-origin': transformOrigin,
         background: squared ? this.state.backgroundColor : 'none',
       },
       filter: n => {
@@ -253,7 +258,7 @@ class Editor extends React.Component {
     }
   }
 
-  updateTheme = theme => this.updateState({ theme })
+  updateTheme = theme => this.updateState({ theme, highlights: null })
   updateHighlights = updates =>
     this.setState(({ highlights = {} }) => ({
       highlights: {
@@ -290,9 +295,17 @@ class Editor extends React.Component {
       .then(() =>
         this.props.setToasts({
           type: 'SET',
-          toasts: [{ children: 'Snippet duplicated!', timeout: 3000 }],
+          toasts: [{ children: 'Snippet created', timeout: 3000 }],
         })
       )
+
+  handleSnippetUpdate = () =>
+    this.context.snippet.update(this.props.snippet.id, this.state).then(() =>
+      this.props.setToasts({
+        type: 'SET',
+        toasts: [{ children: 'Snippet saved', timeout: 3000 }],
+      })
+    )
 
   handleSnippetDelete = () =>
     this.context.snippet
@@ -314,6 +327,7 @@ class Editor extends React.Component {
       backgroundMode,
       code,
       exportSize,
+      titleBar,
     } = this.state
 
     const config = getConfig(this.state)
@@ -389,23 +403,26 @@ class Editor extends React.Component {
                 config={this.state}
                 onChange={this.updateCode}
                 updateWidth={this.updateWidth}
+                updateWidthConfirm={this.sync}
                 loading={this.state.loading}
                 theme={theme}
+                titleBar={titleBar}
+                onTitleBarChange={this.updateTitleBar}
               >
                 {code != null ? code : DEFAULT_CODE}
               </Carbon>
             </Overlay>
           )}
         </Dropzone>
-        {this.props.snippet && (
-          <SnippetToolbar
-            snippet={this.props.snippet}
-            onCreate={this.handleSnippetCreate}
-            onDelete={this.handleSnippetDelete}
-            name={config.name}
-            onChange={this.updateSetting}
-          />
-        )}
+        <SnippetToolbar
+          state={this.state}
+          snippet={this.props.snippet}
+          onCreate={this.handleSnippetCreate}
+          onDelete={this.handleSnippetDelete}
+          onUpdate={this.handleSnippetUpdate}
+          name={config.name}
+          onChange={this.updateSetting}
+        />
         <FontFace {...config} />
         <style jsx>
           {`
@@ -419,8 +436,10 @@ class Editor extends React.Component {
             .share-buttons,
             .setting-buttons {
               display: flex;
-              margin-left: auto;
               height: 40px;
+            }
+            .share-buttons {
+              margin-left: auto;
             }
             .toolbar-second-row {
               display: flex;
